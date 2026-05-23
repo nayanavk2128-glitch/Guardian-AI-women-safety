@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guardian AI — Emergency Contacts</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #03050d;
+  --surface: #080d1a;
+  --card: #0c1220;
+  --card2: #0f1628;
+  --border: rgba(100,160,255,0.08);
+  --border2: rgba(100,160,255,0.15);
+  --accent: #ff2d6b;
+  --accent2: #ff6b35;
+  --blue: #1a8cff;
+  --safe: #00e5a0;
+  --warn: #ffcc00;
+  --danger: #ff2d6b;
+  --purple: #a855f7;
+  --text: #e8f0ff;
+  --muted: #4a6080;
+  --glow-r: rgba(255,45,107,0.3);
+  --glow-b: rgba(26,140,255,0.3);
+  --glow-g: rgba(0,229,160,0.3);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  background:var(--bg);color:var(--text);
+  font-family:'Space Grotesk',sans-serif;
+  min-height:100vh;overflow-x:hidden;
+}
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(ellipse 70% 50% at 85% 5%,rgba(255,45,107,0.06) 0%,transparent 65%),
+    radial-gradient(ellipse 50% 60% at 5% 90%,rgba(26,140,255,0.07) 0%,transparent 65%),
+    radial-gradient(ellipse 40% 40% at 50% 50%,rgba(168,85,247,0.03) 0%,transparent 60%);
+}
+.grid-bg{
+  position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:
+    linear-gradient(rgba(100,160,255,0.03) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(100,160,255,0.03) 1px,transparent 1px);
+  background-size:48px 48px;
+}
+.scanline{
+  position:fixed;top:0;left:0;width:100%;height:100%;
+  pointer-events:none;z-index:9999;
+  background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(26,140,255,0.008) 3px,rgba(26,140,255,0.008) 4px);
+}
+
+/* ── NAVBAR ── */
+nav{
+  position:sticky;top:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 32px;
+  background:rgba(3,5,13,0.92);
+  backdrop-filter:blur(24px);
+  border-bottom:1px solid var(--border2);
+  box-shadow:0 1px 0 rgba(255,45,107,0.1);
+}
+.nav-logo{display:flex;align-items:center;gap:12px}
+.shield-icon{
+  width:40px;height:40px;border-radius:12px;
+  background:linear-gradient(135deg,var(--accent),#8b0033);
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;
+  box-shadow:0 0 24px var(--glow-r);
+  animation:shield-pulse 2.5s ease-in-out infinite;
+}
+@keyframes shield-pulse{0%,100%{box-shadow:0 0 24px var(--glow-r)}50%{box-shadow:0 0 40px rgba(255,45,107,0.6)}}
+.nav-brand{font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;letter-spacing:1px}
+.nav-brand em{font-style:normal;color:var(--accent)}
+.nav-sub{font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-top:1px}
+.nav-links{display:flex;gap:4px}
+.nav-link{
+  padding:7px 16px;border-radius:8px;font-size:13px;font-weight:500;
+  color:var(--muted);text-decoration:none;transition:all 0.2s;
+  border:1px solid transparent;
+}
+.nav-link:hover{color:var(--text);background:rgba(255,255,255,0.04);border-color:var(--border)}
+.nav-link.active{color:var(--blue);background:rgba(26,140,255,0.08);border-color:rgba(26,140,255,0.2)}
+.nav-right{display:flex;gap:10px;align-items:center}
+.sys-badge{
+  display:flex;align-items:center;gap:6px;
+  padding:5px 14px;border-radius:20px;
+  font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;
+  background:rgba(0,229,160,0.1);border:1px solid rgba(0,229,160,0.25);color:var(--safe);
+}
+.pulse-dot{width:7px;height:7px;border-radius:50%;background:currentColor;animation:dotPulse 1.5s ease-in-out infinite}
+@keyframes dotPulse{0%,100%{opacity:1}50%{opacity:0.3}}
+.nav-clock{font-family:'JetBrains Mono',monospace;font-size:14px;color:var(--blue)}
+.btn-nav{
+  padding:7px 18px;border-radius:8px;border:none;cursor:pointer;
+  font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:600;
+  transition:all 0.2s;
+}
+.btn-sos-nav{
+  background:linear-gradient(135deg,var(--accent),#8b0033);
+  color:#fff;box-shadow:0 0 20px rgba(255,45,107,0.35);
+}
+.btn-sos-nav:hover{transform:scale(1.04);box-shadow:0 0 35px rgba(255,45,107,0.6)}
+
+/* ── LAYOUT ── */
+.wrap{max-width:1440px;margin:0 auto;padding:24px 32px;position:relative;z-index:1}
+
+/* ── PAGE HEADER ── */
+.page-header{
+  display:flex;align-items:flex-start;justify-content:space-between;
+  margin-bottom:28px;
+}
+.page-title-block{}
+.page-title{
+  font-family:'Rajdhani',sans-serif;font-size:32px;font-weight:700;letter-spacing:1px;
+  display:flex;align-items:center;gap:12px;
+}
+.page-title-icon{
+  width:42px;height:42px;border-radius:12px;
+  background:linear-gradient(135deg,rgba(26,140,255,0.3),rgba(26,140,255,0.1));
+  border:1px solid rgba(26,140,255,0.3);
+  display:flex;align-items:center;justify-content:center;font-size:20px;
+}
+.page-sub{font-size:13px;color:var(--muted);margin-top:5px;letter-spacing:0.3px}
+.page-actions{display:flex;gap:10px;align-items:center}
+
+/* ── BUTTONS ── */
+.btn{
+  padding:9px 20px;border-radius:10px;border:none;cursor:pointer;
+  font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:600;
+  transition:all 0.2s;display:flex;align-items:center;gap:7px;
+}
+.btn-primary{
+  background:linear-gradient(135deg,var(--blue),#0055cc);
+  color:#fff;box-shadow:0 0 20px rgba(26,140,255,0.25);
+}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 0 30px rgba(26,140,255,0.45)}
+.btn-secondary{
+  background:rgba(255,255,255,0.05);
+  border:1px solid var(--border2);color:var(--text);
+}
+.btn-secondary:hover{background:rgba(255,255,255,0.09);border-color:rgba(100,160,255,0.25)}
+.btn-danger{
+  background:linear-gradient(135deg,rgba(255,45,107,0.2),rgba(255,45,107,0.05));
+  border:1px solid rgba(255,45,107,0.3);color:var(--danger);
+}
+.btn-danger:hover{background:rgba(255,45,107,0.25)}
+.btn-safe{
+  background:linear-gradient(135deg,rgba(0,229,160,0.2),rgba(0,229,160,0.05));
+  border:1px solid rgba(0,229,160,0.3);color:var(--safe);
+}
+.btn-safe:hover{background:rgba(0,229,160,0.25)}
+.btn-sm{padding:6px 14px;font-size:12px;border-radius:8px}
+
+/* ── STATS ROW ── */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:26px}
+.stat-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:14px;padding:16px 20px;position:relative;overflow:hidden;
+}
+.stat-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--blue),transparent);
+}
+.stat-card.green::before{background:linear-gradient(90deg,var(--safe),transparent)}
+.stat-card.warn::before{background:linear-gradient(90deg,var(--warn),transparent)}
+.stat-card.danger::before{background:linear-gradient(90deg,var(--danger),transparent)}
+.stat-label{font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-bottom:8px}
+.stat-val{font-family:'Rajdhani',sans-serif;font-size:36px;font-weight:700;line-height:1}
+.stat-val.c-blue{color:var(--blue)}
+.stat-val.c-safe{color:var(--safe)}
+.stat-val.c-warn{color:var(--warn)}
+.stat-val.c-danger{color:var(--danger)}
+.stat-sub{font-size:11px;color:var(--muted);margin-top:5px}
+
+/* ── MAIN GRID ── */
+.main-grid{display:grid;grid-template-columns:1fr 360px;gap:20px}
+
+/* ── PANEL ── */
+.panel{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden}
+.panel-hdr{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:15px 20px;border-bottom:1px solid var(--border);
+}
+.panel-title{
+  font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:600;
+  letter-spacing:0.5px;display:flex;align-items:center;gap:8px;
+}
+.dot-blink{width:7px;height:7px;border-radius:50%;background:var(--accent);animation:blink 1.5s infinite}
+.dot-blink.blue{background:var(--blue)}
+.dot-blink.green{background:var(--safe)}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+.tag{
+  padding:3px 10px;border-radius:20px;font-size:10px;font-weight:600;
+  letter-spacing:1px;text-transform:uppercase;
+  background:rgba(26,140,255,0.1);border:1px solid rgba(26,140,255,0.2);color:var(--blue);
+}
+.tag.green{background:rgba(0,229,160,0.1);border-color:rgba(0,229,160,0.2);color:var(--safe)}
+.tag.warn{background:rgba(255,204,0,0.1);border-color:rgba(255,204,0,0.2);color:var(--warn)}
+.tag.danger{background:rgba(255,45,107,0.1);border-color:rgba(255,45,107,0.2);color:var(--danger)}
+
+/* ── CONTACTS LIST ── */
+.contacts-list{padding:16px}
+.contact-card{
+  background:var(--card2);border:1px solid var(--border);
+  border-radius:14px;padding:16px 18px;margin-bottom:12px;
+  display:flex;align-items:center;gap:16px;
+  transition:all 0.2s;position:relative;overflow:hidden;
+}
+.contact-card::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;width:3px;
+  background:var(--safe);opacity:0;transition:opacity 0.2s;
+}
+.contact-card:hover::before{opacity:1}
+.contact-card:hover{border-color:var(--border2);transform:translateX(2px)}
+.contact-card.priority-1::before{opacity:1;background:var(--danger)}
+.contact-card.priority-1{border-color:rgba(255,45,107,0.15)}
+.contact-avatar{
+  width:50px;height:50px;border-radius:14px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;flex-shrink:0;position:relative;
+}
+.contact-avatar.family{background:linear-gradient(135deg,rgba(0,229,160,0.2),rgba(0,229,160,0.05));border:1px solid rgba(0,229,160,0.2)}
+.contact-avatar.police{background:linear-gradient(135deg,rgba(26,140,255,0.2),rgba(26,140,255,0.05));border:1px solid rgba(26,140,255,0.2)}
+.contact-avatar.friend{background:linear-gradient(135deg,rgba(168,85,247,0.2),rgba(168,85,247,0.05));border:1px solid rgba(168,85,247,0.2)}
+.contact-avatar.medical{background:linear-gradient(135deg,rgba(255,204,0,0.2),rgba(255,204,0,0.05));border:1px solid rgba(255,204,0,0.2)}
+.priority-badge{
+  position:absolute;top:-4px;right:-4px;
+  width:18px;height:18px;border-radius:50%;
+  background:var(--danger);border:2px solid var(--card2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:9px;font-weight:700;color:#fff;
+}
+.contact-info{flex:1;min-width:0}
+.contact-name{font-size:15px;font-weight:600;margin-bottom:3px;display:flex;align-items:center;gap:8px}
+.contact-relation{
+  font-size:10px;text-transform:uppercase;letter-spacing:1.5px;
+  padding:2px 8px;border-radius:10px;
+}
+.rel-family{background:rgba(0,229,160,0.1);color:var(--safe);border:1px solid rgba(0,229,160,0.2)}
+.rel-police{background:rgba(26,140,255,0.1);color:var(--blue);border:1px solid rgba(26,140,255,0.2)}
+.rel-friend{background:rgba(168,85,247,0.1);color:var(--purple);border:1px solid rgba(168,85,247,0.2)}
+.rel-medical{background:rgba(255,204,0,0.1);color:var(--warn);border:1px solid rgba(255,204,0,0.2)}
+.contact-phone{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);margin-top:5px;display:flex;align-items:center;gap:6px}
+.contact-phone-num{color:var(--text);font-size:13px}
+.contact-meta{display:flex;align-items:center;gap:8px;margin-top:6px}
+.meta-pill{
+  display:flex;align-items:center;gap:4px;
+  padding:2px 8px;border-radius:8px;font-size:10px;
+  background:rgba(255,255,255,0.04);border:1px solid var(--border);color:var(--muted);
+}
+.meta-pill.on{background:rgba(0,229,160,0.08);border-color:rgba(0,229,160,0.15);color:var(--safe)}
+.contact-actions{display:flex;flex-direction:column;gap:6px;flex-shrink:0}
+.action-row{display:flex;gap:6px}
+.btn-icon{
+  width:34px;height:34px;border-radius:9px;border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;font-size:15px;
+  transition:all 0.2s;background:rgba(255,255,255,0.05);color:var(--muted);
+  border:1px solid var(--border);
+}
+.btn-icon:hover{background:rgba(255,255,255,0.1);color:var(--text);transform:scale(1.05)}
+.btn-icon.call{background:rgba(0,229,160,0.1);border-color:rgba(0,229,160,0.2);color:var(--safe)}
+.btn-icon.call:hover{background:rgba(0,229,160,0.2)}
+.btn-icon.sos{background:rgba(255,45,107,0.1);border-color:rgba(255,45,107,0.2);color:var(--danger)}
+.btn-icon.sos:hover{background:rgba(255,45,107,0.25)}
+.btn-icon.edit{background:rgba(26,140,255,0.08);border-color:rgba(26,140,255,0.15);color:var(--blue)}
+.btn-icon.edit:hover{background:rgba(26,140,255,0.18)}
+.btn-icon.del{background:rgba(255,45,107,0.05);border-color:var(--border);color:var(--muted)}
+.btn-icon.del:hover{background:rgba(255,45,107,0.12);color:var(--danger);border-color:rgba(255,45,107,0.25)}
+.last-alerted{
+  font-size:10px;color:var(--muted);text-align:right;
+  font-family:'JetBrains Mono',monospace;
+}
+
+/* ── ADD CONTACT FORM ── */
+.add-form{padding:18px 20px}
+.form-group{margin-bottom:14px}
+.form-label{font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:6px;display:block}
+.form-input{
+  width:100%;background:var(--surface);border:1px solid var(--border2);
+  border-radius:10px;padding:10px 14px;color:var(--text);font-family:'Space Grotesk',sans-serif;
+  font-size:14px;outline:none;transition:all 0.2s;
+}
+.form-input:focus{border-color:rgba(26,140,255,0.4);box-shadow:0 0 0 3px rgba(26,140,255,0.08)}
+.form-input::placeholder{color:var(--muted)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-select{
+  width:100%;background:var(--surface);border:1px solid var(--border2);
+  border-radius:10px;padding:10px 14px;color:var(--text);font-family:'Space Grotesk',sans-serif;
+  font-size:14px;outline:none;transition:all 0.2s;cursor:pointer;
+  appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%234a6080'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 10px center;background-size:20px;
+}
+.form-select:focus{border-color:rgba(26,140,255,0.4);box-shadow:0 0 0 3px rgba(26,140,255,0.08)}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)}
+.toggle-row:last-of-type{border-bottom:none}
+.toggle-label{font-size:13px;color:var(--text)}
+.toggle-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.toggle{
+  width:44px;height:24px;border-radius:12px;
+  background:rgba(255,255,255,0.1);border:1px solid var(--border2);
+  position:relative;cursor:pointer;transition:all 0.25s;flex-shrink:0;
+}
+.toggle.on{background:rgba(0,229,160,0.25);border-color:rgba(0,229,160,0.4)}
+.toggle::after{
+  content:'';position:absolute;top:3px;left:3px;
+  width:16px;height:16px;border-radius:50%;
+  background:var(--muted);transition:all 0.25s;
+}
+.toggle.on::after{left:23px;background:var(--safe)}
+.form-actions{display:flex;gap:10px;margin-top:18px}
+
+/* ── RIGHT SIDEBAR ── */
+.sidebar{display:flex;flex-direction:column;gap:18px}
+
+/* ── ALERT CONFIG ── */
+.alert-config{padding:16px 18px}
+.config-item{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 0;border-bottom:1px solid var(--border);
+}
+.config-item:last-child{border-bottom:none}
+.config-left{display:flex;align-items:center;gap:10px}
+.config-icon{
+  width:32px;height:32px;border-radius:9px;
+  display:flex;align-items:center;justify-content:center;font-size:14px;
+}
+.config-icon.r{background:rgba(255,45,107,0.1);border:1px solid rgba(255,45,107,0.2)}
+.config-icon.b{background:rgba(26,140,255,0.1);border:1px solid rgba(26,140,255,0.15)}
+.config-icon.g{background:rgba(0,229,160,0.1);border:1px solid rgba(0,229,160,0.15)}
+.config-icon.y{background:rgba(255,204,0,0.1);border:1px solid rgba(255,204,0,0.15)}
+.config-name{font-size:13px;font-weight:500}
+.config-sub{font-size:10px;color:var(--muted);margin-top:2px}
+
+/* ── SOS SEQUENCE ── */
+.sos-sequence{padding:16px 18px}
+.sos-step{
+  display:flex;align-items:center;gap:12px;
+  padding:10px 0;border-bottom:1px solid var(--border);
+}
+.sos-step:last-child{border-bottom:none}
+.step-num{
+  width:28px;height:28px;border-radius:50%;flex-shrink:0;
+  background:rgba(255,45,107,0.1);border:1px solid rgba(255,45,107,0.25);
+  color:var(--danger);display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:700;font-family:'JetBrains Mono',monospace;
+}
+.step-info{}
+.step-name{font-size:13px;font-weight:500}
+.step-delay{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-top:2px}
+
+/* ── QUICK TEST ── */
+.quick-test{padding:16px 18px}
+.test-btn{
+  width:100%;padding:12px;border-radius:12px;border:none;cursor:pointer;
+  font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:600;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  margin-bottom:10px;transition:all 0.2s;
+}
+.test-btn.sos-test{
+  background:linear-gradient(135deg,var(--accent),#8b0033);
+  color:#fff;box-shadow:0 0 20px rgba(255,45,107,0.3);
+}
+.test-btn.sos-test:hover{transform:translateY(-1px);box-shadow:0 0 35px rgba(255,45,107,0.5)}
+.test-btn.safe-test{
+  background:rgba(0,229,160,0.1);border:1px solid rgba(0,229,160,0.25);
+  color:var(--safe);
+}
+.test-btn.safe-test:hover{background:rgba(0,229,160,0.18)}
+.test-log{
+  background:var(--surface);border:1px solid var(--border);border-radius:10px;
+  padding:10px 12px;max-height:120px;overflow-y:auto;
+}
+.test-log-line{
+  font-family:'JetBrains Mono',monospace;font-size:10px;
+  color:var(--muted);line-height:1.8;
+}
+.test-log-line.ok{color:var(--safe)}
+.test-log-line.err{color:var(--danger)}
+.test-log-line.info{color:var(--blue)}
+
+/* ── MODAL ── */
+.modal-overlay{
+  display:none;position:fixed;inset:0;z-index:1000;
+  background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);
+  align-items:center;justify-content:center;
+}
+.modal-overlay.show{display:flex}
+.modal{
+  background:var(--card);border:1px solid var(--border2);
+  border-radius:20px;padding:28px;width:420px;max-width:95vw;
+  box-shadow:0 0 60px rgba(0,0,0,0.8),0 0 30px rgba(26,140,255,0.1);
+  animation:modalIn 0.25s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes modalIn{from{opacity:0;transform:scale(0.93) translateY(10px)}to{opacity:1;transform:none}}
+.modal-title{font-family:'Rajdhani',sans-serif;font-size:20px;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:10px}
+.modal-body{}
+.modal-actions{display:flex;gap:10px;margin-top:22px}
+
+/* ── TOAST ── */
+.toast{
+  position:fixed;bottom:28px;right:28px;z-index:9000;
+  background:var(--card2);border:1px solid var(--border2);
+  border-radius:12px;padding:14px 18px;
+  display:flex;align-items:center;gap:10px;
+  font-size:13px;font-weight:500;min-width:260px;
+  box-shadow:0 8px 32px rgba(0,0,0,0.5);
+  transform:translateY(20px);opacity:0;
+  transition:all 0.35s cubic-bezier(0.34,1.56,0.64,1);
+  pointer-events:none;
+}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.safe{border-color:rgba(0,229,160,0.3);color:var(--safe)}
+.toast.danger{border-color:rgba(255,45,107,0.3);color:var(--danger)}
+.toast.info{border-color:rgba(26,140,255,0.3);color:var(--blue)}
+
+/* ── PRIORITY DRAG HINT ── */
+.drag-hint{
+  font-size:11px;color:var(--muted);letter-spacing:0.5px;
+  padding:10px 20px;border-top:1px solid var(--border);
+  display:flex;align-items:center;gap:6px;
+}
+
+/* ── EMPTY STATE ── */
+.empty-state{
+  padding:48px;text-align:center;color:var(--muted);
+}
+.empty-icon{font-size:48px;margin-bottom:14px;opacity:0.4}
+.empty-text{font-size:15px}
+.empty-sub{font-size:12px;margin-top:6px}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(100,160,255,0.15);border-radius:10px}
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="scanline"></div>
+
+<!-- NAVBAR -->
+<nav>
+  <div class="nav-logo">
+    <div class="shield-icon">🛡</div>
+    <div>
+      <div class="nav-brand">Guardian <em>AI</em></div>
+      <div class="nav-sub">Women & Children Safety</div>
+    </div>
+  </div>
+  <div class="nav-links">
+    <a href="index.html" class="nav-link">📊 Dashboard</a>
+    <a href="#" class="nav-link active">👥 Contacts</a>
+    <a href="#" class="nav-link">🗺 Route Safety</a>
+    <a href="#" class="nav-link">📋 Reports</a>
+    <a href="#" class="nav-link">⚙ Settings</a>
+  </div>
+  <div class="nav-right">
+    <div class="sys-badge"><div class="pulse-dot"></div>ALL SYSTEMS ACTIVE</div>
+    <div class="nav-clock" id="navClock">--:--:--</div>
+    <button class="btn-nav btn-sos-nav" onclick="triggerTestSOS()">🆘 SOS</button>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<div class="wrap">
+
+  <!-- PAGE HEADER -->
+  <div class="page-header">
+    <div class="page-title-block">
+      <div class="page-title">
+        <div class="page-title-icon">👥</div>
+        Emergency Contacts
+      </div>
+      <div class="page-sub">Manage trusted contacts · Configure SOS alert sequence · Test emergency dispatch</div>
+    </div>
+    <div class="page-actions">
+      <button class="btn btn-secondary" onclick="exportContacts()">⬇ Export</button>
+      <button class="btn btn-primary" onclick="openAddModal()">+ Add Contact</button>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-row">
+    <div class="stat-card green">
+      <div class="stat-label">Total Contacts</div>
+      <div class="stat-val c-safe" id="totalContacts">5</div>
+      <div class="stat-sub">Across all categories</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">SOS Recipients</div>
+      <div class="stat-val c-blue" id="sosCount">3</div>
+      <div class="stat-sub">Will receive SOS alerts</div>
+    </div>
+    <div class="stat-card warn">
+      <div class="stat-label">GPS Broadcast</div>
+      <div class="stat-val c-warn" id="gpsCount">4</div>
+      <div class="stat-sub">Receive live location</div>
+    </div>
+    <div class="stat-card danger">
+      <div class="stat-label">Last Alert Sent</div>
+      <div class="stat-val c-danger" style="font-size:22px;padding-top:4px" id="lastAlert">Never</div>
+      <div class="stat-sub">No recent SOS events</div>
+    </div>
+  </div>
+
+  <!-- MAIN GRID -->
+  <div class="main-grid">
+
+    <!-- LEFT: CONTACTS LIST + ADD FORM -->
+    <div style="display:flex;flex-direction:column;gap:18px">
+
+      <!-- CONTACTS LIST -->
+      <div class="panel">
+        <div class="panel-hdr">
+          <div class="panel-title"><span class="dot-blink"></span> Emergency Contacts</div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <span class="tag green" id="activeTag">5 Active</span>
+            <select class="form-select" style="width:130px;padding:5px 30px 5px 10px;font-size:11px" onchange="filterContacts(this.value)">
+              <option value="all">All Categories</option>
+              <option value="family">Family</option>
+              <option value="police">Police / Official</option>
+              <option value="friend">Friends</option>
+              <option value="medical">Medical</option>
+            </select>
+          </div>
+        </div>
+        <div class="contacts-list" id="contactsList">
+          <!-- Contacts rendered by JS -->
+        </div>
+        <div class="drag-hint">💡 Contacts at top of list are alerted first during SOS — drag to reorder priority</div>
+      </div>
+
+      <!-- ADD CONTACT FORM -->
+      <div class="panel" id="addContactPanel" style="display:none">
+        <div class="panel-hdr">
+          <div class="panel-title"><span class="dot-blink blue"></span> <span id="formTitle">Add New Contact</span></div>
+          <button class="btn btn-secondary btn-sm" onclick="closeAddForm()">✕ Close</button>
+        </div>
+        <div class="add-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Full Name</label>
+              <input class="form-input" id="fName" type="text" placeholder="e.g. Priya Sharma" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Phone Number</label>
+              <input class="form-input" id="fPhone" type="tel" placeholder="+91 98765 43210" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Relationship</label>
+              <select class="form-select" id="fRelation">
+                <option value="family">Family</option>
+                <option value="police">Police / Official</option>
+                <option value="friend">Friend</option>
+                <option value="medical">Medical</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Emoji / Icon</label>
+              <input class="form-input" id="fEmoji" type="text" placeholder="👩" maxlength="2" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Alert Preferences</label>
+            <div class="toggle-row">
+              <div>
+                <div class="toggle-label">SOS Alert</div>
+                <div class="toggle-sub">Send SOS message when triggered</div>
+              </div>
+              <div class="toggle on" id="tSos" onclick="this.classList.toggle('on')"></div>
+            </div>
+            <div class="toggle-row">
+              <div>
+                <div class="toggle-label">Live GPS Share</div>
+                <div class="toggle-sub">Broadcast real-time location</div>
+              </div>
+              <div class="toggle on" id="tGps" onclick="this.classList.toggle('on')"></div>
+            </div>
+            <div class="toggle-row">
+              <div>
+                <div class="toggle-label">Keyword Alert</div>
+                <div class="toggle-sub">Alert when distress keyword detected</div>
+              </div>
+              <div class="toggle" id="tKeyword" onclick="this.classList.toggle('on')"></div>
+            </div>
+            <div class="toggle-row">
+              <div>
+                <div class="toggle-label">Check-In Reminder</div>
+                <div class="toggle-sub">Notify if check-in is missed</div>
+              </div>
+              <div class="toggle" id="tCheckin" onclick="this.classList.toggle('on')"></div>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-primary" onclick="saveContact()">💾 Save Contact</button>
+            <button class="btn btn-secondary" onclick="closeAddForm()">Cancel</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT: SIDEBAR -->
+    <div class="sidebar">
+
+      <!-- SOS ALERT SEQUENCE -->
+      <div class="panel">
+        <div class="panel-hdr">
+          <div class="panel-title"><span class="dot-blink"></span> SOS Alert Sequence</div>
+          <span class="tag danger">Auto</span>
+        </div>
+        <div class="sos-sequence" id="sosSequence">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+
+      <!-- ALERT CONFIGURATION -->
+      <div class="panel">
+        <div class="panel-hdr">
+          <div class="panel-title"><span class="dot-blink blue"></span> Alert Configuration</div>
+        </div>
+        <div class="alert-config">
+          <div class="config-item">
+            <div class="config-left">
+              <div class="config-icon r">📱</div>
+              <div>
+                <div class="config-name">SMS Alert</div>
+                <div class="config-sub">Text + GPS link on SOS</div>
+              </div>
+            </div>
+            <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+          </div>
+          <div class="config-item">
+            <div class="config-left">
+              <div class="config-icon b">📞</div>
+              <div>
+                <div class="config-name">Auto Call</div>
+                <div class="config-sub">Call primary contact</div>
+              </div>
+            </div>
+            <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+          </div>
+          <div class="config-item">
+            <div class="config-left">
+              <div class="config-icon g">📍</div>
+              <div>
+                <div class="config-name">GPS Broadcast</div>
+                <div class="config-sub">Share live location link</div>
+              </div>
+            </div>
+            <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+          </div>
+          <div class="config-item">
+            <div class="config-left">
+              <div class="config-icon y">🔊</div>
+              <div>
+                <div class="config-name">Audio Evidence</div>
+                <div class="config-sub">Record & share 30s audio</div>
+              </div>
+            </div>
+            <div class="toggle" onclick="this.classList.toggle('on')"></div>
+          </div>
+          <div class="config-item">
+            <div class="config-left">
+              <div class="config-icon r">📸</div>
+              <div>
+                <div class="config-name">Camera Snapshot</div>
+                <div class="config-sub">Capture & send front cam</div>
+              </div>
+            </div>
+            <div class="toggle" onclick="this.classList.toggle('on')"></div>
+          </div>
+          <div class="config-item">
+            <div class="config-left">
+              <div class="config-icon b">🔁</div>
+              <div>
+                <div class="config-name">Repeat Alert</div>
+                <div class="config-sub">Resend every 5 mins</div>
+              </div>
+            </div>
+            <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- QUICK TEST -->
+      <div class="panel">
+        <div class="panel-hdr">
+          <div class="panel-title"><span class="dot-blink green"></span> Test Alert System</div>
+          <span class="tag green">Simulation</span>
+        </div>
+        <div class="quick-test">
+          <button class="test-btn sos-test" onclick="runSOSTest()">🆘 Simulate SOS Dispatch</button>
+          <button class="test-btn safe-test" onclick="runSafeTest()">✅ Send "I'm Safe" Message</button>
+          <div class="test-log" id="testLog">
+            <div class="test-log-line"># Alert system ready — all contacts reachable</div>
+            <div class="test-log-line ok">&gt; network.ping() → 3/3 contacts reachable ✓</div>
+            <div class="test-log-line info">&gt; gps.status() → locked (±12m accuracy)</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ADD CONTACT MODAL -->
+<div class="modal-overlay" id="addModal">
+  <div class="modal">
+    <div class="modal-title">
+      <div style="width:36px;height:36px;border-radius:10px;background:rgba(26,140,255,0.15);border:1px solid rgba(26,140,255,0.3);display:flex;align-items:center;justify-content:center;font-size:17px">👤</div>
+      <span id="modalTitle">Add New Contact</span>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Full Name *</label>
+          <input class="form-input" id="mName" type="text" placeholder="Full name" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Phone *</label>
+          <input class="form-input" id="mPhone" type="tel" placeholder="+91 98765 43210" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Relationship</label>
+          <select class="form-select" id="mRelation">
+            <option value="family">Family</option>
+            <option value="police">Police / Official</option>
+            <option value="friend">Friend</option>
+            <option value="medical">Medical</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Icon Emoji</label>
+          <input class="form-input" id="mEmoji" type="text" placeholder="👩" maxlength="2" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Alerts</label>
+        <div class="toggle-row">
+          <div><div class="toggle-label">SOS Alert</div></div>
+          <div class="toggle on" id="mSos" onclick="this.classList.toggle('on')"></div>
+        </div>
+        <div class="toggle-row">
+          <div><div class="toggle-label">Live GPS Share</div></div>
+          <div class="toggle on" id="mGps" onclick="this.classList.toggle('on')"></div>
+        </div>
+        <div class="toggle-row">
+          <div><div class="toggle-label">Keyword / Emotion Alert</div></div>
+          <div class="toggle" id="mKeyword" onclick="this.classList.toggle('on')"></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" style="flex:1" onclick="saveModalContact()">💾 Save Contact</button>
+      <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+
+/* ── STATE ── */
+let contacts = [
+  { id:1, name:'Mom', emoji:'👩', phone:'+91 98400 12345', relation:'family', sos:true, gps:true, keyword:false, checkin:true, priority:1, lastAlerted:null },
+  { id:2, name:'Police Station #7', emoji:'👮', phone:'112', relation:'police', sos:true, gps:true, keyword:true, checkin:false, priority:2, lastAlerted:null },
+  { id:3, name:'Sister Meena', emoji:'👩‍👧', phone:'+91 97890 56789', relation:'family', sos:true, gps:true, keyword:false, checkin:false, priority:3, lastAlerted:null },
+  { id:4, name:'Best Friend Riya', emoji:'👯', phone:'+91 99001 23456', relation:'friend', sos:false, gps:true, keyword:false, checkin:true, priority:4, lastAlerted:null },
+  { id:5, name:'Dr. Anita (Family Doctor)', emoji:'👩‍⚕️', phone:'+91 80100 77777', relation:'medical', sos:false, gps:false, keyword:false, checkin:false, priority:5, lastAlerted:null },
+];
+let nextId = 6;
+let currentFilter = 'all';
+let editingId = null;
+
+const REL_LABELS = { family:'Family', police:'Police / Official', friend:'Friend', medical:'Medical' };
+const REL_CLASSES = { family:'rel-family', police:'rel-police', friend:'rel-friend', medical:'rel-medical' };
+const AVATAR_CLASSES = { family:'family', police:'police', friend:'friend', medical:'medical' };
+
+/* ── CLOCK ── */
+function startClock(){
+  const tick=()=>{
+    const t=new Date().toLocaleTimeString('en-IN',{hour12:false});
+    document.getElementById('navClock').textContent=t;
+  };
+  tick(); setInterval(tick,1000);
+}
+
+/* ── TOAST ── */
+function showToast(msg, type='info'){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + type;
+  clearTimeout(t._timer);
+  t._timer = setTimeout(()=>t.className='toast',3200);
+}
+
+/* ── RENDER CONTACTS ── */
+function renderContacts(){
+  const list = document.getElementById('contactsList');
+  const filtered = currentFilter === 'all' ? contacts : contacts.filter(c=>c.relation===currentFilter);
+
+  if(filtered.length === 0){
+    list.innerHTML = `<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">No contacts found</div><div class="empty-sub">Add an emergency contact above</div></div>`;
+    return;
+  }
+
+  list.innerHTML = filtered.map(c=>`
+    <div class="contact-card ${c.priority===1?'priority-1':''}" id="cc-${c.id}">
+      <div class="contact-avatar ${AVATAR_CLASSES[c.relation]||'family'}">
+        ${c.emoji || '👤'}
+        ${c.priority===1?'<div class="priority-badge">1</div>':''}
+      </div>
+      <div class="contact-info">
+        <div class="contact-name">
+          ${c.name}
+          <span class="contact-relation ${REL_CLASSES[c.relation]}">${REL_LABELS[c.relation]}</span>
+        </div>
+        <div class="contact-phone">📞 <span class="contact-phone-num">${c.phone}</span></div>
+        <div class="contact-meta">
+          ${c.sos?'<div class="meta-pill on">🆘 SOS</div>':'<div class="meta-pill">🆘 SOS off</div>'}
+          ${c.gps?'<div class="meta-pill on">📍 GPS</div>':'<div class="meta-pill">📍 GPS off</div>'}
+          ${c.keyword?'<div class="meta-pill on">🔑 KW</div>':''}
+          ${c.checkin?'<div class="meta-pill on">✔ Check-in</div>':''}
+        </div>
+        <div class="last-alerted" style="margin-top:4px">${c.lastAlerted ? '⚡ Alerted '+c.lastAlerted : '💤 Never alerted'}</div>
+      </div>
+      <div class="contact-actions">
+        <div class="action-row">
+          <button class="btn-icon call" title="Call" onclick="callContact(${c.id})">📞</button>
+          <button class="btn-icon sos" title="SOS Alert" onclick="alertContact(${c.id})">🆘</button>
+        </div>
+        <div class="action-row">
+          <button class="btn-icon edit" title="Edit" onclick="editContact(${c.id})">✏️</button>
+          <button class="btn-icon del" title="Delete" onclick="deleteContact(${c.id})">🗑</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+
+  updateStats();
+  renderSOSSequence();
+}
+
+/* ── STATS ── */
+function updateStats(){
+  document.getElementById('totalContacts').textContent = contacts.length;
+  document.getElementById('sosCount').textContent = contacts.filter(c=>c.sos).length;
+  document.getElementById('gpsCount').textContent = contacts.filter(c=>c.gps).length;
+  document.getElementById('activeTag').textContent = contacts.length + ' Active';
+}
+
+/* ── SOS SEQUENCE ── */
+function renderSOSSequence(){
+  const seq = document.getElementById('sosSequence');
+  const sosContacts = contacts.filter(c=>c.sos).sort((a,b)=>a.priority-b.priority);
+  if(sosContacts.length===0){
+    seq.innerHTML='<div style="color:var(--muted);font-size:13px;padding:8px 0">No contacts with SOS enabled</div>';
+    return;
+  }
+  seq.innerHTML = sosContacts.map((c,i)=>`
+    <div class="sos-step">
+      <div class="step-num">${i+1}</div>
+      <div class="step-info">
+        <div class="step-name">${c.emoji} ${c.name}</div>
+        <div class="step-delay">${c.phone} — delay: +${i*2}s</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+/* ── FILTER ── */
+function filterContacts(val){
+  currentFilter = val;
+  renderContacts();
+}
+
+/* ── ADD MODAL ── */
+function openAddModal(){
+  editingId = null;
+  document.getElementById('modalTitle').textContent = 'Add New Contact';
+  ['mName','mPhone','mEmoji'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('mRelation').value='family';
+  ['mSos','mGps'].forEach(id=>{document.getElementById(id).classList.add('on')});
+  ['mKeyword'].forEach(id=>{document.getElementById(id).classList.remove('on')});
+  document.getElementById('addModal').classList.add('show');
+}
+function closeModal(){
+  document.getElementById('addModal').classList.remove('show');
+  editingId = null;
+}
+
+/* ── EDIT ── */
+function editContact(id){
+  const c = contacts.find(x=>x.id===id);
+  if(!c) return;
+  editingId = id;
+  document.getElementById('modalTitle').textContent = 'Edit Contact';
+  document.getElementById('mName').value = c.name;
+  document.getElementById('mPhone').value = c.phone;
+  document.getElementById('mEmoji').value = c.emoji || '';
+  document.getElementById('mRelation').value = c.relation;
+  document.getElementById('mSos').className = 'toggle' + (c.sos?' on':'');
+  document.getElementById('mGps').className = 'toggle' + (c.gps?' on':'');
+  document.getElementById('mKeyword').className = 'toggle' + (c.keyword?' on':'');
+  document.getElementById('addModal').classList.add('show');
+}
+
+/* ── SAVE ── */
+function saveModalContact(){
+  const name = document.getElementById('mName').value.trim();
+  const phone = document.getElementById('mPhone').value.trim();
+  if(!name || !phone){ showToast('⚠ Name and phone are required','danger'); return; }
+  const sos = document.getElementById('mSos').classList.contains('on');
+  const gps = document.getElementById('mGps').classList.contains('on');
+  const keyword = document.getElementById('mKeyword').classList.contains('on');
+  const emoji = document.getElementById('mEmoji').value.trim() || '👤';
+  const relation = document.getElementById('mRelation').value;
+
+  if(editingId){
+    const idx = contacts.findIndex(c=>c.id===editingId);
+    if(idx!==-1){
+      contacts[idx] = {...contacts[idx], name, phone, emoji, relation, sos, gps, keyword};
+      showToast('✅ Contact updated','safe');
+    }
+  } else {
+    const priority = contacts.length + 1;
+    contacts.push({id:nextId++, name, emoji, phone, relation, sos, gps, keyword, checkin:false, priority, lastAlerted:null});
+    showToast('✅ Contact added','safe');
+  }
+  closeModal();
+  renderContacts();
+}
+
+/* ── DELETE ── */
+function deleteContact(id){
+  contacts = contacts.filter(c=>c.id!==id);
+  contacts.forEach((c,i)=>c.priority=i+1);
+  renderContacts();
+  showToast('🗑 Contact removed','info');
+}
+
+/* ── CALL ── */
+function callContact(id){
+  const c = contacts.find(x=>x.id===id);
+  if(!c) return;
+  showToast(`📞 Calling ${c.name}…`,'info');
+  addTestLog(`> call.initiate(${c.phone}) → dialling…`,'info');
+}
+
+/* ── ALERT SINGLE ── */
+function alertContact(id){
+  const c = contacts.find(x=>x.id===id);
+  if(!c) return;
+  const now = new Date().toLocaleTimeString('en-IN',{hour12:false});
+  c.lastAlerted = now;
+  document.getElementById('lastAlert').textContent = now;
+  renderContacts();
+  showToast(`🆘 Alert sent to ${c.name}`,'danger');
+  addTestLog(`> sos.alert("${c.name}") → sent ✓`,'ok');
+}
+
+/* ── SOS TEST ── */
+function triggerTestSOS(){
+  runSOSTest();
+}
+function runSOSTest(){
+  const sosContacts = contacts.filter(c=>c.sos);
+  if(sosContacts.length===0){showToast('⚠ No SOS contacts configured','danger');return;}
+  addTestLog('> SOS.simulate() → starting…','info');
+  sosContacts.forEach((c,i)=>{
+    setTimeout(()=>{
+      const now=new Date().toLocaleTimeString('en-IN',{hour12:false});
+      c.lastAlerted=now;
+      document.getElementById('lastAlert').textContent=now;
+      addTestLog(`> alert.send("${c.name}") → ✓ delivered [+${i*2}s]`,'ok');
+      if(i===sosContacts.length-1){
+        renderContacts();
+        showToast('🆘 SOS simulation complete — all contacts alerted','danger');
+      }
+    }, i*1000);
+  });
+  addTestLog('> gps.broadcast() → location shared','ok');
+}
+function runSafeTest(){
+  const gpsContacts = contacts.filter(c=>c.gps);
+  addTestLog("> safe.message() → sending…",'info');
+  gpsContacts.forEach((c,i)=>{
+    setTimeout(()=>{
+      addTestLog(`> safe.send("${c.name}") → ✓`,'ok');
+    }, i*600);
+  });
+  setTimeout(()=>showToast("✅ 'I'm Safe' message sent to all contacts",'safe'), gpsContacts.length*600+200);
+}
+
+/* ── TEST LOG ── */
+function addTestLog(text, cls=''){
+  const log = document.getElementById('testLog');
+  const line = document.createElement('div');
+  line.className = 'test-log-line ' + cls;
+  line.textContent = text;
+  log.appendChild(line);
+  log.scrollTop = log.scrollHeight;
+  while(log.children.length > 20) log.removeChild(log.firstChild);
+}
+
+/* ── EXPORT ── */
+function exportContacts(){
+  const csv = ['Name,Phone,Relation,SOS,GPS,Keyword,CheckIn']
+    .concat(contacts.map(c=>`${c.name},${c.phone},${c.relation},${c.sos},${c.gps},${c.keyword},${c.checkin}`))
+    .join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  a.download = 'guardian_contacts.csv';
+  a.click();
+  showToast('⬇ Contacts exported as CSV','info');
+}
+
+/* ── CLOSE ON OUTSIDE CLICK ── */
+document.getElementById('addModal').addEventListener('click', function(e){
+  if(e.target === this) closeModal();
+});
+
+/* ── INIT ── */
+startClock();
+renderContacts();
+
+// Periodic live log
+const periodicLogs = [
+  ['> network.ping() → all contacts reachable ✓','ok'],
+  ['> gps.track() → lock acquired (±15m)','ok'],
+  ['> guardian.status() → monitoring active','info'],
+  ['> contacts.sync() → 5 contacts loaded','ok'],
+];
+let _logIdx = 0;
+setInterval(()=>{
+  const [msg,cls] = periodicLogs[_logIdx % periodicLogs.length];
+  addTestLog(msg, cls);
+  _logIdx++;
+}, 8000);
+</script>
+</body>
+</html>

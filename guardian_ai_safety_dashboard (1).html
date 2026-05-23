@@ -1,0 +1,396 @@
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500;600&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+--pri:#0a0f1e;--sec:#0d1528;--card:#111827;--border:#1e3a5f;
+--red:#ff2d55;--green:#00e676;--amber:#ffab00;--blue:#00b4ff;--purple:#9c27b0;
+--text:#e8f4ff;--muted:#5a7a9a;
+}
+body{background:var(--pri);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;overflow-x:hidden}
+.scanline{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,180,255,0.015) 2px,rgba(0,180,255,0.015) 4px);z-index:9999}
+.container{padding:16px;max-width:1100px;margin:0 auto}
+.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;padding:12px 20px;background:var(--sec);border:1px solid var(--border);border-radius:12px;position:relative;overflow:hidden}
+.header::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--blue),var(--red),transparent);animation:scan 3s linear infinite}
+@keyframes scan{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+.logo{display:flex;align-items:center;gap:12px}
+.logo-icon{width:40px;height:40px;background:linear-gradient(135deg,var(--red),var(--blue));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,45,85,0.4)}50%{box-shadow:0 0 0 12px rgba(255,45,85,0)}}
+.logo-text{font-family:'Orbitron',monospace;font-size:20px;font-weight:900;background:linear-gradient(90deg,var(--blue),var(--red));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.logo-sub{font-size:10px;color:var(--muted);letter-spacing:3px;text-transform:uppercase}
+.status-bar{display:flex;align-items:center;gap:16px}
+.status-pill{display:flex;align-items:center;gap:6px;padding:6px 14px;border-radius:20px;font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.status-pill.safe{background:rgba(0,230,118,0.1);border:1px solid rgba(0,230,118,0.3);color:var(--green)}
+.status-pill.alert{background:rgba(255,45,85,0.1);border:1px solid rgba(255,45,85,0.3);color:var(--red);animation:blink 1s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.4}}
+.dot{width:8px;height:8px;border-radius:50%;background:currentColor}
+.time{font-family:'Orbitron',monospace;font-size:13px;color:var(--blue)}
+.grid-main{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px}
+.grid-bot{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;position:relative;overflow:hidden}
+.card::after{content:'';position:absolute;inset:0;pointer-events:none;border-radius:12px;border:1px solid transparent;background:linear-gradient(135deg,rgba(0,180,255,0.05),transparent) border-box}
+.card-title{font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card-title i{font-size:14px}
+.safety-ring{position:relative;width:120px;height:120px;margin:0 auto 12px}
+.ring-svg{width:120px;height:120px;transform:rotate(-90deg)}
+.ring-bg{fill:none;stroke:#1a2a3a;stroke-width:10}
+.ring-fill{fill:none;stroke-width:10;stroke-linecap:round;transition:stroke-dashoffset 1s ease}
+.ring-label{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center}
+.ring-num{font-family:'Orbitron',monospace;font-size:22px;font-weight:700;color:var(--green)}
+.ring-sub{font-size:9px;color:var(--muted);letter-spacing:1px}
+.metric-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.metric-box{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center}
+.metric-val{font-family:'Orbitron',monospace;font-size:16px;font-weight:700;margin-bottom:2px}
+.metric-label{font-size:9px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.metric-val.ok{color:var(--green)}
+.metric-val.warn{color:var(--amber)}
+.metric-val.danger{color:var(--red)}
+.alert-list{display:flex;flex-direction:column;gap:8px}
+.alert-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;font-size:12px;border-left:3px solid}
+.alert-item.green{background:rgba(0,230,118,0.07);border-color:var(--green);color:var(--green)}
+.alert-item.amber{background:rgba(255,171,0,0.07);border-color:var(--amber);color:var(--amber)}
+.alert-item.red{background:rgba(255,45,85,0.07);border-color:var(--red);color:var(--red)}
+.alert-item.blue{background:rgba(0,180,255,0.07);border-color:var(--blue);color:var(--blue)}
+.alert-time{font-size:10px;opacity:0.6;margin-left:auto;white-space:nowrap}
+.map-area{height:180px;background:#0a1628;border-radius:8px;position:relative;overflow:hidden;margin-bottom:10px}
+.map-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(0,180,255,0.08) 1px,transparent 1px),linear-gradient(90deg,rgba(0,180,255,0.08) 1px,transparent 1px);background-size:30px 30px}
+.map-zone{position:absolute;border-radius:50%;opacity:0.25}
+.zone-red{width:80px;height:80px;background:var(--red);top:40px;left:60px}
+.zone-amber{width:60px;height:60px;background:var(--amber);top:80px;right:80px}
+.zone-green{width:50px;height:50px;background:var(--green);bottom:20px;left:140px}
+.user-marker{position:absolute;width:14px;height:14px;background:var(--blue);border-radius:50%;border:2px solid white;top:90px;left:110px;animation:ping 1.5s ease-out infinite;z-index:2}
+@keyframes ping{0%{box-shadow:0 0 0 0 rgba(0,180,255,0.6)}100%{box-shadow:0 0 0 20px rgba(0,180,255,0)}}
+.route-path{position:absolute;top:0;left:0;width:100%;height:100%}
+.legend{display:flex;gap:12px;flex-wrap:wrap}
+.leg-item{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--muted)}
+.leg-dot{width:8px;height:8px;border-radius:50%}
+.feature-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.feat-card{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;padding:10px;display:flex;align-items:center;gap:10px}
+.feat-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.feat-icon.r{background:rgba(255,45,85,0.15);color:var(--red)}
+.feat-icon.g{background:rgba(0,230,118,0.15);color:var(--green)}
+.feat-icon.b{background:rgba(0,180,255,0.15);color:var(--blue)}
+.feat-icon.a{background:rgba(255,171,0,0.15);color:var(--amber)}
+.feat-text{font-size:11px;color:var(--text);line-height:1.4}
+.feat-label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:2px}
+.sos-btn{width:100%;padding:14px;background:linear-gradient(135deg,var(--red),#8b0000);border:none;border-radius:10px;color:white;font-family:'Orbitron',monospace;font-size:14px;font-weight:700;letter-spacing:3px;cursor:pointer;position:relative;overflow:hidden;transition:transform 0.1s}
+.sos-btn:active{transform:scale(0.97)}
+.sos-btn::before{content:'';position:absolute;top:50%;left:50%;width:0;height:0;background:rgba(255,255,255,0.2);border-radius:50%;transform:translate(-50%,-50%);transition:width 0.4s,height 0.4s}
+.sos-btn:active::before{width:300px;height:300px}
+.score-bar{margin-bottom:8px}
+.score-label{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:4px}
+.score-track{height:6px;background:#1a2a3a;border-radius:3px;overflow:hidden}
+.score-fill{height:100%;border-radius:3px;transition:width 0.8s ease}
+.model-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:10px;letter-spacing:1px;border:1px solid rgba(156,33,176,0.4);color:#ce93d8;background:rgba(156,33,176,0.1);margin-bottom:10px}
+.live-feed{height:70px;background:#050d1a;border-radius:6px;border:1px solid var(--border);padding:8px;font-family:'Courier New',monospace;font-size:10px;overflow:hidden;position:relative}
+.feed-line{color:var(--green);line-height:1.6;opacity:0}
+.feed-line.show{opacity:1}
+.cam-frame{height:100px;background:#050d1a;border-radius:8px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;margin-bottom:10px}
+.cam-scan{position:absolute;width:100%;height:3px;background:linear-gradient(90deg,transparent,var(--green),transparent);animation:camScan 2s linear infinite}
+@keyframes camScan{0%{top:-3px}100%{top:103%}}
+.face-box{width:50px;height:60px;border:2px solid var(--green);border-radius:4px;position:relative}
+.face-corner{position:absolute;width:8px;height:8px;border-color:var(--blue);border-style:solid}
+.fc-tl{top:-1px;left:-1px;border-width:2px 0 0 2px}
+.fc-tr{top:-1px;right:-1px;border-width:2px 2px 0 0}
+.fc-bl{bottom:-1px;left:-1px;border-width:0 0 2px 2px}
+.fc-br{bottom:-1px;right:-1px;border-width:0 2px 2px 0}
+.expression-tag{position:absolute;bottom:6px;right:8px;background:rgba(0,230,118,0.15);border:1px solid var(--green);color:var(--green);font-size:9px;padding:2px 7px;border-radius:10px;letter-spacing:1px}
+.cam-label{position:absolute;top:6px;left:8px;font-size:9px;color:var(--blue);letter-spacing:1px;text-transform:uppercase}
+.waveform{height:40px;display:flex;align-items:center;gap:2px;margin-bottom:10px}
+.wave-bar{flex:1;border-radius:1px;background:var(--blue);opacity:0.7;animation:wave 0.4s ease-in-out infinite alternate}
+@keyframes wave{0%{transform:scaleY(0.2)}100%{transform:scaleY(1)}}
+.shakeBar{display:flex;gap:6px;align-items:center;margin-bottom:10px}
+.shake-step{flex:1;height:10px;border-radius:3px;background:#1a2a3a;border:1px solid var(--border);transition:all 0.3s}
+.shake-step.active{background:var(--amber);border-color:var(--amber);box-shadow:0 0 8px var(--amber)}
+</style>
+
+<div class="scanline"></div>
+<div class="container">
+  <h2 class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden">Guardian AI — Women Safety Dashboard showing real-time safety score, GPS tracking, sensor data, and emergency controls</h2>
+
+  <div class="header">
+    <div class="logo">
+      <div class="logo-icon">🛡️</div>
+      <div>
+        <div class="logo-text">GUARDIAN AI</div>
+        <div class="logo-sub">Women Safety Intelligence System</div>
+      </div>
+    </div>
+    <div class="status-bar">
+      <div class="status-pill safe"><div class="dot"></div>SYSTEM ACTIVE</div>
+      <div class="time" id="clock">--:--:--</div>
+    </div>
+  </div>
+
+  <div class="grid-main">
+
+    <div class="card">
+      <div class="card-title"><i class="ti ti-shield-check" aria-hidden="true"></i> Safety Score</div>
+      <div class="safety-ring">
+        <svg class="ring-svg" viewBox="0 0 120 120">
+          <circle class="ring-bg" cx="60" cy="60" r="50"/>
+          <circle class="ring-fill" id="safetyRing" cx="60" cy="60" r="50" stroke="#00e676" stroke-dasharray="314" stroke-dashoffset="94"/>
+        </svg>
+        <div class="ring-label">
+          <div class="ring-num" id="safetyNum">70</div>
+          <div class="ring-sub">SAFE</div>
+        </div>
+      </div>
+      <div class="model-badge"><i class="ti ti-cpu" aria-hidden="true"></i> XGBoost Model</div>
+      <div class="score-bar">
+        <div class="score-label"><span>Street Lighting</span><span style="color:var(--green)">Good</span></div>
+        <div class="score-track"><div class="score-fill" style="width:78%;background:var(--green)"></div></div>
+      </div>
+      <div class="score-bar">
+        <div class="score-label"><span>Crime History</span><span style="color:var(--amber)">Moderate</span></div>
+        <div class="score-track"><div class="score-fill" style="width:45%;background:var(--amber)"></div></div>
+      </div>
+      <div class="score-bar">
+        <div class="score-label"><span>Open Shops</span><span style="color:var(--green)">7 nearby</span></div>
+        <div class="score-track"><div class="score-fill" style="width:65%;background:var(--green)"></div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><i class="ti ti-map-pin" aria-hidden="true"></i> Live GPS Tracking</div>
+      <div class="map-area">
+        <div class="map-grid"></div>
+        <div class="map-zone zone-red"></div>
+        <div class="map-zone zone-amber"></div>
+        <div class="map-zone zone-green"></div>
+        <svg class="route-path" viewBox="0 0 300 180" xmlns="http://www.w3.org/2000/svg">
+          <path d="M 30 150 Q 80 120 110 97" stroke="#00b4ff" stroke-width="2" fill="none" stroke-dasharray="5,3" opacity="0.6"/>
+          <path d="M 110 97 Q 150 70 200 90" stroke="#00b4ff" stroke-width="2" fill="none" stroke-dasharray="5,3" opacity="0.3"/>
+        </svg>
+        <div class="user-marker"></div>
+        <div style="position:absolute;top:6px;right:8px;font-size:9px;color:var(--blue);letter-spacing:1px">LIVE</div>
+        <div style="position:absolute;bottom:6px;left:8px;font-size:9px;color:var(--muted)">12.9716° N, 77.5946° E</div>
+      </div>
+      <div class="legend">
+        <div class="leg-item"><div class="leg-dot" style="background:var(--red)"></div>Red Zone</div>
+        <div class="leg-item"><div class="leg-dot" style="background:var(--amber)"></div>Caution</div>
+        <div class="leg-item"><div class="leg-dot" style="background:var(--green)"></div>Safe Zone</div>
+        <div class="leg-item"><div class="leg-dot" style="background:var(--blue)"></div>User</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><i class="ti ti-activity" aria-hidden="true"></i> Biometric Sensors</div>
+      <div class="metric-grid">
+        <div class="metric-box">
+          <div class="metric-val ok" id="heartRate">78</div>
+          <div class="metric-label">❤️ BPM</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-val ok" id="steps">82</div>
+          <div class="metric-label">👟 Steps/min</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-val ok" id="motion">Normal</div>
+          <div class="metric-label">📱 Motion</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-val ok" id="sound">Calm</div>
+          <div class="metric-label">🎙️ Audio</div>
+        </div>
+      </div>
+      <div style="margin-top:12px">
+        <div class="card-title" style="margin-bottom:6px"><i class="ti ti-microphone" aria-hidden="true"></i> Audio Analysis</div>
+        <div class="waveform" id="waveform"></div>
+        <div style="font-size:10px;color:var(--muted)">Listening for: <span style="color:var(--green)">help • assist • danger • scream</span></div>
+      </div>
+      <div style="margin-top:12px">
+        <div class="card-title" style="margin-bottom:6px"><i class="ti ti-device-mobile-vibration" aria-hidden="true"></i> Shake Detection</div>
+        <div class="shakeBar">
+          <div class="shake-step" id="s1"></div>
+          <div class="shake-step" id="s2"></div>
+          <div class="shake-step" id="s3"></div>
+        </div>
+        <div style="font-size:10px;color:var(--muted)">3 shakes = Emergency SOS trigger</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-bot">
+
+    <div class="card">
+      <div class="card-title"><i class="ti ti-camera" aria-hidden="true"></i> CV Intelligence</div>
+      <div class="cam-frame">
+        <div class="cam-scan"></div>
+        <div class="cam-label">CAMERA FEED</div>
+        <div class="face-box">
+          <div class="face-corner fc-tl"></div>
+          <div class="face-corner fc-tr"></div>
+          <div class="face-corner fc-bl"></div>
+          <div class="face-corner fc-br"></div>
+        </div>
+        <div class="expression-tag" id="exprTag">CALM ✓</div>
+      </div>
+      <div class="feature-grid">
+        <div class="feat-card">
+          <div class="feat-icon g">😊</div>
+          <div>
+            <div class="feat-text">Face Expression</div>
+            <div class="feat-label">CNN Detection</div>
+          </div>
+        </div>
+        <div class="feat-card">
+          <div class="feat-icon b">✋</div>
+          <div>
+            <div class="feat-text">Hand Signal SOS</div>
+            <div class="feat-label">MediaPipe</div>
+          </div>
+        </div>
+        <div class="feat-card">
+          <div class="feat-icon r">🔊</div>
+          <div>
+            <div class="feat-text">Scream/Struggle</div>
+            <div class="feat-label">Audio AI</div>
+          </div>
+        </div>
+        <div class="feat-card">
+          <div class="feat-icon a">🚨</div>
+          <div>
+            <div class="feat-text">Glass Break / Noise</div>
+            <div class="feat-label">Pattern Match</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><i class="ti ti-bell-ringing" aria-hidden="true"></i> Activity Log</div>
+      <div class="alert-list" id="alertList">
+        <div class="alert-item green"><i class="ti ti-check" aria-hidden="true"></i>System initialized, all sensors active<span class="alert-time">now</span></div>
+        <div class="alert-item blue"><i class="ti ti-map-pin" aria-hidden="true"></i>GPS lock acquired — Bengaluru, KA<span class="alert-time">0:12</span></div>
+        <div class="alert-item green"><i class="ti ti-heart" aria-hidden="true"></i>Heart rate normal: 78 BPM<span class="alert-time">0:24</span></div>
+        <div class="alert-item amber"><i class="ti ti-alert-triangle" aria-hidden="true"></i>Entering amber zone — caution advised<span class="alert-time">0:38</span></div>
+        <div class="alert-item green"><i class="ti ti-route" aria-hidden="true"></i>Route safety score: 70/100<span class="alert-time">0:51</span></div>
+      </div>
+      <div style="margin-top:12px">
+        <div class="card-title" style="margin-bottom:6px"><i class="ti ti-terminal" aria-hidden="true"></i> AI Feed</div>
+        <div class="live-feed" id="liveFeed">
+          <div class="feed-line show" id="f1">&gt; model.predict(route_features) → SAFE</div>
+          <div class="feed-line show" id="f2">&gt; audio.classify() → ambient_noise</div>
+          <div class="feed-line show" id="f3">&gt; face.emotion() → calm [0.92]</div>
+          <div class="feed-line" id="f4">&gt; gps.broadcast() → family + police</div>
+        </div>
+      </div>
+      <div style="margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <button class="sos-btn" onclick="triggerSOS()" style="font-size:11px">🚨 SOS NOW</button>
+        <button onclick="triggerFakeScreen()" style="background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:10px;color:var(--muted);font-size:11px;padding:14px;cursor:pointer;font-family:inherit">🔋 Fake Screen</button>
+      </div>
+      <div style="margin-top:8px;font-size:10px;color:var(--muted);text-align:center">Alert contacts: 👩 Mom • 👮 Police Station #7</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const waves = document.getElementById('waveform');
+for(let i=0;i<30;i++){
+  const b=document.createElement('div');
+  b.className='wave-bar';
+  b.style.height=Math.random()*35+5+'px';
+  b.style.animationDelay=Math.random()*0.4+'s';
+  b.style.animationDuration=(0.3+Math.random()*0.4)+'s';
+  waves.appendChild(b);
+}
+
+function updateClock(){
+  const n=new Date();
+  document.getElementById('clock').textContent=n.toLocaleTimeString('en-IN',{hour12:false});
+}
+setInterval(updateClock,1000);updateClock();
+
+let shakeCount=0;
+function animateShake(){
+  shakeCount=0;
+  ['s1','s2','s3'].forEach(id=>document.getElementById(id).classList.remove('active'));
+  let i=0;
+  const iv=setInterval(()=>{
+    if(i<3){document.getElementById(['s1','s2','s3'][i]).classList.add('active');i++;}
+    else{clearInterval(iv);setTimeout(()=>{['s1','s2','s3'].forEach(id=>document.getElementById(id).classList.remove('active'))},2000);}
+  },600);
+}
+setInterval(animateShake,8000);
+
+const hr=document.getElementById('heartRate');
+const steps=document.getElementById('steps');
+const motion=document.getElementById('motion');
+const sound=document.getElementById('sound');
+const exprs=['CALM ✓','STRESSED ⚠','FEARFUL 🚨','CALM ✓','CALM ✓'];
+let exprIdx=0;
+
+function jitter(base,range){return Math.round(base+Math.random()*range*2-range);}
+setInterval(()=>{
+  const h=jitter(78,6);
+  hr.textContent=h;
+  hr.className='metric-val '+(h>100?'danger':h>90?'warn':'ok');
+  steps.textContent=jitter(82,10);
+  const feed4=document.getElementById('f4');
+  feed4.classList.add('show');
+},3000);
+
+setInterval(()=>{
+  exprIdx=(exprIdx+1)%exprs.length;
+  const tag=document.getElementById('exprTag');
+  const ex=exprs[exprIdx];
+  tag.textContent=ex;
+  if(ex.includes('FEARFUL')){tag.style.color='var(--red)';tag.style.borderColor='var(--red)';tag.style.background='rgba(255,45,85,0.15)';addAlert('red','⚠ Fearful expression detected — checking in...');}
+  else if(ex.includes('STRESSED')){tag.style.color='var(--amber)';tag.style.borderColor='var(--amber)';tag.style.background='rgba(255,171,0,0.15)';}
+  else{tag.style.color='var(--green)';tag.style.borderColor='var(--green)';tag.style.background='rgba(0,230,118,0.15)';}
+},7000);
+
+const safetyVals=[70,65,72,68,55,80,70];
+let svIdx=0;
+setInterval(()=>{
+  svIdx=(svIdx+1)%safetyVals.length;
+  const v=safetyVals[svIdx];
+  document.getElementById('safetyNum').textContent=v;
+  const offset=314-(314*v/100);
+  const ring=document.getElementById('safetyRing');
+  ring.style.strokeDashoffset=offset;
+  ring.style.stroke=v>=70?'#00e676':v>=50?'#ffab00':'#ff2d55';
+  document.getElementById('safetyNum').style.color=v>=70?'var(--green)':v>=50?'var(--amber)':'var(--red)';
+  if(v<60)addAlert('amber','Route safety dropped to '+v+'/100 — rerouting suggested');
+},5000);
+
+const feedLines=['&gt; xgboost.score() → '+Math.round(70),'&gt; audio.classify() → ambient_noise','&gt; gps.broadcast() → live streaming','&gt; handSignal.detect() → none','&gt; shake.count() → 0/3','&gt; face.emotion() → calm [0.89]'];
+let flIdx=0;
+setInterval(()=>{
+  const fd=document.getElementById('liveFeed');
+  const lines=fd.querySelectorAll('.feed-line');
+  lines.forEach((l,i)=>{if(i<lines.length-1)l.textContent=lines[i+1].textContent;});
+  lines[lines.length-1].textContent=feedLines[flIdx%feedLines.length];
+  lines[lines.length-1].classList.add('show');
+  flIdx++;
+},2500);
+
+function addAlert(type,msg){
+  const list=document.getElementById('alertList');
+  const icons={red:'ti-alert-triangle',amber:'ti-alert-triangle',green:'ti-check',blue:'ti-info-circle'};
+  const div=document.createElement('div');
+  div.className='alert-item '+type;
+  div.innerHTML=`<i class="ti ${icons[type]||'ti-info-circle'}" aria-hidden="true"></i>${msg}<span class="alert-time">now</span>`;
+  list.insertBefore(div,list.firstChild);
+  if(list.children.length>6)list.removeChild(list.lastChild);
+}
+
+function triggerSOS(){
+  addAlert('red','🚨 SOS TRIGGERED — Broadcasting GPS to family & Police Station #7');
+  addAlert('red','📍 Location shared: 12.9716°N, 77.5946°E');
+  document.querySelector('.status-pill').className='status-pill alert';
+  document.querySelector('.status-pill').innerHTML='<div class="dot"></div>SOS ACTIVE';
+  setTimeout(()=>{
+    document.querySelector('.status-pill').className='status-pill safe';
+    document.querySelector('.status-pill').innerHTML='<div class="dot"></div>SYSTEM ACTIVE';
+  },6000);
+}
+
+function triggerFakeScreen(){
+  addAlert('blue','🔋 Fake screen mode activated — recording in background');
+}
+
+setTimeout(()=>addAlert('blue','AI model loaded: XGBoost + Random Forest ensemble'),3000);
+setTimeout(()=>addAlert('green','Voice keyword detection active'),6000);
+</script>

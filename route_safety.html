@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guardian AI — Route Safety</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #03050d;
+  --surface: #080d1a;
+  --card: #0c1220;
+  --card2: #0f1628;
+  --border: rgba(100,160,255,0.08);
+  --border2: rgba(100,160,255,0.15);
+  --accent: #ff2d6b;
+  --accent2: #ff6b35;
+  --blue: #1a8cff;
+  --safe: #00e5a0;
+  --warn: #ffcc00;
+  --danger: #ff2d6b;
+  --purple: #a855f7;
+  --text: #e8f0ff;
+  --muted: #4a6080;
+  --glow-r: rgba(255,45,107,0.3);
+  --glow-b: rgba(26,140,255,0.3);
+  --glow-g: rgba(0,229,160,0.3);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  background:var(--bg);color:var(--text);
+  font-family:'Space Grotesk',sans-serif;
+  min-height:100vh;overflow-x:hidden;
+}
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(ellipse 70% 50% at 85% 5%,rgba(255,45,107,0.06) 0%,transparent 65%),
+    radial-gradient(ellipse 50% 60% at 5% 90%,rgba(26,140,255,0.07) 0%,transparent 65%),
+    radial-gradient(ellipse 40% 40% at 50% 50%,rgba(168,85,247,0.03) 0%,transparent 60%);
+}
+.grid-bg{
+  position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:
+    linear-gradient(rgba(100,160,255,0.03) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(100,160,255,0.03) 1px,transparent 1px);
+  background-size:48px 48px;
+}
+.scanline{
+  position:fixed;top:0;left:0;width:100%;height:100%;
+  pointer-events:none;z-index:9999;
+  background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(26,140,255,0.008) 3px,rgba(26,140,255,0.008) 4px);
+}
+
+/* NAV */
+nav{
+  position:sticky;top:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 32px;
+  background:rgba(3,5,13,0.92);
+  backdrop-filter:blur(24px);
+  border-bottom:1px solid var(--border2);
+  box-shadow:0 1px 0 rgba(255,45,107,0.1);
+}
+.nav-logo{display:flex;align-items:center;gap:12px}
+.shield-icon{
+  width:40px;height:40px;border-radius:12px;
+  background:linear-gradient(135deg,var(--accent),#8b0033);
+  display:flex;align-items:center;justify-content:center;font-size:20px;
+  box-shadow:0 0 24px var(--glow-r);
+  animation:shield-pulse 2.5s ease-in-out infinite;
+}
+@keyframes shield-pulse{0%,100%{box-shadow:0 0 24px var(--glow-r)}50%{box-shadow:0 0 40px rgba(255,45,107,0.6)}}
+.nav-brand{font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;letter-spacing:1px}
+.nav-brand em{font-style:normal;color:var(--accent)}
+.nav-sub{font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-top:1px}
+.nav-links{display:flex;gap:4px}
+.nav-link{
+  padding:7px 16px;border-radius:8px;font-size:13px;font-weight:500;
+  color:var(--muted);text-decoration:none;transition:all 0.2s;
+  border:1px solid transparent;
+}
+.nav-link:hover{color:var(--text);background:rgba(255,255,255,0.04);border-color:var(--border)}
+.nav-link.active{color:var(--blue);background:rgba(26,140,255,0.08);border-color:rgba(26,140,255,0.2)}
+.nav-right{display:flex;gap:10px;align-items:center}
+.sys-badge{
+  display:flex;align-items:center;gap:6px;
+  padding:5px 14px;border-radius:20px;
+  font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;
+  background:rgba(0,229,160,0.1);border:1px solid rgba(0,229,160,0.25);color:var(--safe);
+}
+.pulse-dot{width:7px;height:7px;border-radius:50%;background:currentColor;animation:dotPulse 1.5s ease-in-out infinite}
+@keyframes dotPulse{0%,100%{opacity:1}50%{opacity:0.3}}
+.nav-clock{font-family:'JetBrains Mono',monospace;font-size:14px;color:var(--blue)}
+.btn-nav{
+  padding:7px 18px;border-radius:8px;border:none;cursor:pointer;
+  font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:600;transition:all 0.2s;
+}
+.btn-sos-nav{
+  background:linear-gradient(135deg,var(--accent),#8b0033);
+  color:#fff;box-shadow:0 0 20px rgba(255,45,107,0.35);
+}
+.btn-sos-nav:hover{transform:scale(1.04);box-shadow:0 0 35px rgba(255,45,107,0.6)}
+
+/* LAYOUT */
+.wrap{max-width:1440px;margin:0 auto;padding:24px 32px;position:relative;z-index:1}
+
+/* PAGE HEADER */
+.page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:28px}
+.page-title{
+  font-family:'Rajdhani',sans-serif;font-size:32px;font-weight:700;letter-spacing:1px;
+  display:flex;align-items:center;gap:12px;
+}
+.page-title-icon{
+  width:42px;height:42px;border-radius:12px;
+  background:linear-gradient(135deg,rgba(0,229,160,0.25),rgba(0,229,160,0.08));
+  border:1px solid rgba(0,229,160,0.3);
+  display:flex;align-items:center;justify-content:center;font-size:20px;
+}
+.page-sub{font-size:13px;color:var(--muted);margin-top:5px}
+.page-actions{display:flex;gap:10px}
+.btn{
+  padding:9px 20px;border-radius:10px;border:none;cursor:pointer;
+  font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:600;
+  transition:all 0.2s;display:flex;align-items:center;gap:7px;
+}
+.btn-primary{background:linear-gradient(135deg,var(--blue),#0055cc);color:#fff;box-shadow:0 0 20px rgba(26,140,255,0.25);}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 0 30px rgba(26,140,255,0.45)}
+.btn-success{background:linear-gradient(135deg,var(--safe),#007a52);color:#000;font-weight:700;}
+.btn-success:hover{transform:translateY(-1px);box-shadow:0 0 30px rgba(0,229,160,0.4)}
+.btn-ghost{background:rgba(255,255,255,0.05);border:1px solid var(--border2);color:var(--text);}
+
+/* PANEL */
+.panel{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden}
+.panel-hdr{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 18px;border-bottom:1px solid var(--border);
+}
+.panel-title{
+  font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:600;
+  letter-spacing:0.5px;display:flex;align-items:center;gap:8px;
+}
+.dot-blink{width:7px;height:7px;border-radius:50%;background:var(--safe);animation:blink 1.5s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+
+/* MAIN GRID */
+.main-grid{display:grid;grid-template-columns:1fr 340px;gap:18px;margin-bottom:18px}
+.bottom-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+
+/* MAP */
+.map-container{position:relative;background:#020810;min-height:460px;overflow:hidden}
+.map-canvas{width:100%;height:460px;display:block}
+.map-hud{
+  position:absolute;top:14px;left:14px;
+  display:flex;flex-direction:column;gap:8px;
+}
+.map-hud-tr{position:absolute;top:14px;right:14px;display:flex;flex-direction:column;gap:8px;align-items:flex-end}
+.hud-chip{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:5px 12px;border-radius:20px;font-size:11px;font-weight:600;
+  font-family:'JetBrains Mono',monospace;letter-spacing:0.5px;
+}
+.chip-live{background:rgba(0,229,160,0.15);border:1px solid rgba(0,229,160,0.3);color:var(--safe)}
+.chip-warn{background:rgba(255,204,0,0.15);border:1px solid rgba(255,204,0,0.3);color:var(--warn)}
+.chip-danger{background:rgba(255,45,107,0.15);border:1px solid rgba(255,45,107,0.35);color:var(--danger)}
+.chip-blue{background:rgba(26,140,255,0.15);border:1px solid rgba(26,140,255,0.3);color:var(--blue)}
+.map-controls{
+  position:absolute;bottom:14px;left:14px;
+  display:flex;gap:8px;
+}
+.map-btn{
+  padding:7px 14px;border-radius:8px;border:1px solid var(--border2);
+  background:rgba(3,5,13,0.8);backdrop-filter:blur(8px);
+  color:var(--text);font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s;
+}
+.map-btn:hover{background:rgba(26,140,255,0.15);border-color:var(--blue);color:var(--blue)}
+.map-btn.active{background:rgba(0,229,160,0.15);border-color:var(--safe);color:var(--safe)}
+
+/* ROUTE INPUT */
+.route-input-section{padding:18px}
+.input-group{margin-bottom:14px}
+.input-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px}
+.input-row{display:flex;gap:8px}
+.route-input{
+  flex:1;background:rgba(255,255,255,0.04);border:1px solid var(--border2);
+  border-radius:10px;padding:10px 14px;color:var(--text);font-family:'Space Grotesk',sans-serif;
+  font-size:13px;outline:none;transition:all 0.2s;
+}
+.route-input:focus{border-color:rgba(26,140,255,0.5);background:rgba(26,140,255,0.05)}
+.route-input::placeholder{color:var(--muted)}
+.icon-btn{
+  width:42px;height:42px;border-radius:10px;border:1px solid var(--border2);
+  background:rgba(255,255,255,0.04);color:var(--muted);font-size:18px;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.2s;
+}
+.icon-btn:hover{background:rgba(26,140,255,0.1);border-color:var(--blue);color:var(--blue)}
+
+/* SCORE RING */
+.score-section{padding:18px;border-bottom:1px solid var(--border)}
+.score-ring-wrap{display:flex;align-items:center;gap:20px}
+.ring-svg-wrap{position:relative;width:100px;height:100px;flex-shrink:0}
+.ring-svg{width:100px;height:100px;transform:rotate(-90deg)}
+.ring-bg{fill:none;stroke:rgba(100,160,255,0.1);stroke-width:8}
+.ring-fill{fill:none;stroke-width:8;stroke-linecap:round;transition:all 1s ease}
+.ring-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center}
+.ring-num{font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:700}
+.ring-lbl{font-size:9px;color:var(--muted);letter-spacing:1px}
+.score-details{flex:1}
+.score-factor{margin-bottom:10px}
+.factor-row{display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px}
+.factor-name{color:var(--muted)}
+.factor-val{font-family:'JetBrains Mono',monospace}
+.factor-bar{height:4px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden}
+.factor-fill{height:100%;border-radius:2px;transition:width 1s ease}
+
+/* ZONE LIST */
+.zone-list{padding:18px}
+.zone-item{
+  display:flex;align-items:center;gap:12px;
+  padding:12px;border-radius:10px;border:1px solid var(--border);
+  margin-bottom:10px;transition:all 0.2s;cursor:pointer;
+}
+.zone-item:hover{border-color:var(--border2);background:rgba(255,255,255,0.02)}
+.zone-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0}
+.zone-info{flex:1}
+.zone-name{font-size:13px;font-weight:600}
+.zone-meta{font-size:11px;color:var(--muted);margin-top:2px}
+.zone-badge{
+  padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;
+  letter-spacing:0.5px;font-family:'JetBrains Mono',monospace;
+}
+.zbadge-safe{background:rgba(0,229,160,0.12);color:var(--safe)}
+.zbadge-warn{background:rgba(255,204,0,0.12);color:var(--warn)}
+.zbadge-danger{background:rgba(255,45,107,0.12);color:var(--danger)}
+
+/* TIMELINE */
+.timeline-section{padding:18px}
+.tl-item{display:flex;gap:12px;margin-bottom:16px;position:relative}
+.tl-item::before{
+  content:'';position:absolute;left:15px;top:28px;bottom:-16px;width:1px;
+  background:var(--border);
+}
+.tl-item:last-child::before{display:none}
+.tl-icon{
+  width:30px;height:30px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-size:14px;flex-shrink:0;border:1px solid var(--border2);
+  background:var(--card2);
+}
+.tl-content{flex:1;padding-top:4px}
+.tl-label{font-size:13px;font-weight:600}
+.tl-meta{font-size:11px;color:var(--muted);margin-top:2px}
+.tl-time{font-size:10px;color:var(--muted);font-family:'JetBrains Mono',monospace;margin-top:4px}
+
+/* STATS ROW */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px}
+.stat-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:14px;padding:16px;position:relative;overflow:hidden;
+}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.stat-card.s-green::before{background:linear-gradient(90deg,var(--safe),transparent)}
+.stat-card.s-blue::before{background:linear-gradient(90deg,var(--blue),transparent)}
+.stat-card.s-warn::before{background:linear-gradient(90deg,var(--warn),transparent)}
+.stat-card.s-red::before{background:linear-gradient(90deg,var(--danger),transparent)}
+.stat-label{font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-bottom:6px}
+.stat-val{font-family:'Rajdhani',sans-serif;font-size:32px;font-weight:700}
+.stat-sub{font-size:11px;color:var(--muted);margin-top:3px}
+.c-safe{color:var(--safe)}.c-blue{color:var(--blue)}.c-warn{color:var(--warn)}.c-danger{color:var(--danger)}
+
+/* NEARBY POLICE */
+.police-list{padding:18px}
+.police-item{
+  display:flex;align-items:center;gap:12px;
+  padding:12px;border-radius:10px;border:1px solid var(--border);
+  margin-bottom:10px;
+}
+.police-icon{
+  width:38px;height:38px;border-radius:10px;background:rgba(26,140,255,0.1);
+  border:1px solid rgba(26,140,255,0.2);display:flex;align-items:center;
+  justify-content:center;font-size:18px;flex-shrink:0;
+}
+.police-info{flex:1}
+.police-name{font-size:13px;font-weight:600}
+.police-meta{font-size:11px;color:var(--muted);margin-top:2px}
+.police-dist{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--blue)}
+.call-btn{
+  padding:6px 14px;border-radius:8px;border:1px solid rgba(0,229,160,0.3);
+  background:rgba(0,229,160,0.08);color:var(--safe);font-size:12px;font-weight:600;
+  cursor:pointer;transition:all 0.2s;
+}
+.call-btn:hover{background:rgba(0,229,160,0.2)}
+
+/* SAFE ROUTE SUGGESTIONS */
+.route-suggestion{
+  margin:0 18px 12px;padding:14px;border-radius:12px;
+  border:1px solid var(--border);
+  display:flex;align-items:center;gap:14px;
+  cursor:pointer;transition:all 0.2s;
+}
+.route-suggestion:hover{border-color:var(--border2);background:rgba(255,255,255,0.02)}
+.route-suggestion.best{border-color:rgba(0,229,160,0.3);background:rgba(0,229,160,0.04)}
+.route-icon{
+  width:40px;height:40px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;
+}
+.route-icon.green{background:rgba(0,229,160,0.1)}
+.route-icon.warn{background:rgba(255,204,0,0.1)}
+.route-icon.blue{background:rgba(26,140,255,0.1)}
+.route-details{flex:1}
+.route-name{font-size:13px;font-weight:600}
+.route-meta{font-size:11px;color:var(--muted);margin-top:2px}
+.route-score-badge{
+  text-align:right;
+}
+.route-score-num{font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700}
+.route-score-lbl{font-size:10px;color:var(--muted)}
+.best-tag{
+  display:inline-block;padding:2px 8px;border-radius:20px;font-size:9px;
+  font-weight:700;letter-spacing:1px;background:rgba(0,229,160,0.15);
+  color:var(--safe);border:1px solid rgba(0,229,160,0.3);margin-bottom:4px;
+}
+
+/* SOS OVERLAY */
+.sos-overlay{
+  position:fixed;inset:0;z-index:500;
+  background:rgba(255,20,60,0.12);backdrop-filter:blur(4px);
+  display:none;align-items:center;justify-content:center;
+}
+.sos-overlay.show{display:flex}
+.sos-modal{
+  background:var(--card);border:1px solid rgba(255,45,107,0.5);
+  border-radius:20px;padding:32px;text-align:center;max-width:380px;
+  box-shadow:0 0 60px rgba(255,45,107,0.3);
+}
+.sos-icon{font-size:56px;margin-bottom:16px}
+.sos-title{font-family:'Rajdhani',sans-serif;font-size:28px;font-weight:700;color:var(--danger);margin-bottom:8px}
+.sos-sub{font-size:13px;color:var(--muted);margin-bottom:20px}
+.sos-coords-text{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--safe);margin-bottom:20px}
+.sos-cancel{
+  padding:10px 28px;border-radius:10px;border:1px solid var(--border2);
+  background:rgba(255,255,255,0.06);color:var(--text);font-size:13px;
+  font-weight:600;cursor:pointer;transition:all 0.2s;
+}
+.sos-cancel:hover{background:rgba(255,255,255,0.12)}
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="scanline"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">
+    <div class="shield-icon">🛡</div>
+    <div>
+      <div class="nav-brand"><em>Guardian</em> AI</div>
+      <div class="nav-sub">Women &amp; Children Safety</div>
+    </div>
+  </div>
+  <div class="nav-links">
+    <a href="index.html" class="nav-link">📊 Dashboard</a>
+    <a href="contacts.html" class="nav-link">👥 Contacts</a>
+    <a href="route_safety.html" class="nav-link active">🗺 Route Safety</a>
+    <a href="reports.html" class="nav-link">📋 Reports</a>
+    <a href="settings.html" class="nav-link">⚙ Settings</a>
+  </div>
+  <div class="nav-right">
+    <div class="sys-badge">
+      <div class="pulse-dot"></div>GPS ACTIVE
+    </div>
+    <div class="nav-clock" id="navClock">--:--:--</div>
+    <button class="btn-nav btn-sos-nav" onclick="triggerSOSRoute()">🆘 SOS</button>
+  </div>
+</nav>
+
+<div class="wrap">
+  <!-- PAGE HEADER -->
+  <div class="page-header">
+    <div>
+      <div class="page-title">
+        <div class="page-title-icon">🗺</div>
+        Route Safety Analyser
+      </div>
+      <div class="page-sub">AI-powered route risk scoring · Real-time zone mapping · Safe path suggestions</div>
+    </div>
+    <div class="page-actions">
+      <button class="btn btn-ghost" onclick="shareLocation()">📤 Share Location</button>
+      <button class="btn btn-success" onclick="startNavigation()">🧭 Start Navigation</button>
+    </div>
+  </div>
+
+  <!-- STATS ROW -->
+  <div class="stats-row">
+    <div class="stat-card s-green">
+      <div class="stat-label">Route Safety Score</div>
+      <div class="stat-val c-safe" id="routeScoreMain">--</div>
+      <div class="stat-sub" id="routeZoneMain">Calculating...</div>
+    </div>
+    <div class="stat-card s-blue">
+      <div class="stat-label">Distance to Dest</div>
+      <div class="stat-val c-blue" id="routeDist">3.2</div>
+      <div class="stat-sub">km via safest path</div>
+    </div>
+    <div class="stat-card s-warn">
+      <div class="stat-label">Red Zones Ahead</div>
+      <div class="stat-val c-warn" id="redZonesCount">2</div>
+      <div class="stat-sub">zones detected on route</div>
+    </div>
+    <div class="stat-card s-green">
+      <div class="stat-label">Police Stations</div>
+      <div class="stat-val c-safe">4</div>
+      <div class="stat-sub">within 1 km radius</div>
+    </div>
+  </div>
+
+  <!-- MAIN GRID -->
+  <div class="main-grid">
+
+    <!-- MAP PANEL -->
+    <div class="panel">
+      <div class="panel-hdr">
+        <div class="panel-title"><div class="dot-blink"></div>Live Safety Map</div>
+        <div style="display:flex;gap:8px">
+          <div class="hud-chip chip-live">● GPS LIVE</div>
+          <div class="hud-chip chip-blue" id="gpsCoordChip">12.9716°N 77.5946°E</div>
+        </div>
+      </div>
+      <div class="map-container">
+        <canvas class="map-canvas" id="routeMapCanvas"></canvas>
+        <div class="map-hud">
+          <div class="hud-chip chip-live">● TRACKING</div>
+          <div class="hud-chip chip-warn" id="nearestZoneChip">⚠ Zone 400m ahead</div>
+        </div>
+        <div class="map-hud-tr">
+          <div class="hud-chip chip-blue" id="timeChip">ETA: ~9 min</div>
+        </div>
+        <div class="map-controls">
+          <button class="map-btn" onclick="recenterMap()">⊕ Recenter</button>
+          <button class="map-btn" id="btnSafestPath" onclick="showSafestPath()" >🟢 Safest Path</button>
+          <button class="map-btn" onclick="toggleHeatmap()">🔥 Heatmap</button>
+        </div>
+      </div>
+      <!-- ROUTE INPUT -->
+      <div class="route-input-section">
+        <div class="input-group">
+          <div class="input-label">📍 From (Current Location)</div>
+          <div class="input-row">
+            <input class="route-input" id="fromInput" placeholder="Detecting your location..." readonly>
+            <button class="icon-btn" onclick="detectLocation()" title="Detect Location">📡</button>
+          </div>
+        </div>
+        <div class="input-group" style="margin-bottom:0">
+          <div class="input-label">🏁 Destination</div>
+          <div class="input-row">
+            <input class="route-input" id="toInput" placeholder="Enter destination address...">
+            <button class="icon-btn" onclick="analyseRoute()" title="Analyse Route">🔍</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SIDE PANEL -->
+    <div style="display:flex;flex-direction:column;gap:18px">
+
+      <!-- SAFETY SCORE -->
+      <div class="panel">
+        <div class="panel-hdr">
+          <div class="panel-title">🛡 Route Risk Score</div>
+        </div>
+        <div class="score-section">
+          <div class="score-ring-wrap">
+            <div class="ring-svg-wrap">
+              <svg class="ring-svg" viewBox="0 0 100 100">
+                <circle class="ring-bg" cx="50" cy="50" r="40"/>
+                <circle class="ring-fill" id="scoreRingRoute" cx="50" cy="50" r="40"
+                  stroke="var(--safe)" stroke-dasharray="251.2" stroke-dashoffset="75"/>
+              </svg>
+              <div class="ring-center">
+                <div class="ring-num c-safe" id="scoreNumRoute">70</div>
+                <div class="ring-lbl">SCORE</div>
+              </div>
+            </div>
+            <div class="score-details">
+              <div class="score-factor">
+                <div class="factor-row">
+                  <span class="factor-name">🌙 Time of Day</span>
+                  <span class="factor-val" id="f1">--</span>
+                </div>
+                <div class="factor-bar"><div class="factor-fill" id="ff1" style="width:0%"></div></div>
+              </div>
+              <div class="score-factor">
+                <div class="factor-row">
+                  <span class="factor-name">💡 Street Lighting</span>
+                  <span class="factor-val" id="f2">--</span>
+                </div>
+                <div class="factor-bar"><div class="factor-fill" id="ff2" style="width:0%"></div></div>
+              </div>
+              <div class="score-factor">
+                <div class="factor-row">
+                  <span class="factor-name">🚨 Crime History</span>
+                  <span class="factor-val" id="f3">--</span>
+                </div>
+                <div class="factor-bar"><div class="factor-fill" id="ff3" style="width:0%"></div></div>
+              </div>
+              <div class="score-factor" style="margin-bottom:0">
+                <div class="factor-row">
+                  <span class="factor-name">🏪 Open Shops</span>
+                  <span class="factor-val" id="f4">--</span>
+                </div>
+                <div class="factor-bar"><div class="factor-fill" id="ff4" style="width:0%"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ROUTE SUGGESTIONS -->
+        <div class="panel-hdr" style="border-top:1px solid var(--border)">
+          <div class="panel-title">🧭 Route Options</div>
+        </div>
+        <div class="route-suggestion best" onclick="selectRoute(0)">
+          <div class="route-icon green">🟢</div>
+          <div class="route-details">
+            <div class="best-tag">✓ SAFEST</div>
+            <div class="route-name">Via MG Road</div>
+            <div class="route-meta">3.2 km · ~9 min · Well-lit</div>
+          </div>
+          <div class="route-score-badge">
+            <div class="route-score-num c-safe" id="r1Score">82</div>
+            <div class="route-score-lbl">SAFE SCORE</div>
+          </div>
+        </div>
+        <div class="route-suggestion" onclick="selectRoute(1)">
+          <div class="route-icon warn">🟡</div>
+          <div class="route-details">
+            <div class="route-name">Via Brigade Road</div>
+            <div class="route-meta">2.8 km · ~7 min · Moderate</div>
+          </div>
+          <div class="route-score-badge">
+            <div class="route-score-num c-warn">58</div>
+            <div class="route-score-lbl">SAFE SCORE</div>
+          </div>
+        </div>
+        <div class="route-suggestion" style="margin-bottom:18px" onclick="selectRoute(2)">
+          <div class="route-icon blue">🔵</div>
+          <div class="route-details">
+            <div class="route-name">Via Residency Road</div>
+            <div class="route-meta">3.6 km · ~11 min · Safest streets</div>
+          </div>
+          <div class="route-score-badge">
+            <div class="route-score-num c-blue">76</div>
+            <div class="route-score-lbl">SAFE SCORE</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTTOM GRID -->
+  <div class="bottom-grid">
+
+    <!-- ZONE MAP -->
+    <div class="panel">
+      <div class="panel-hdr">
+        <div class="panel-title">🔴 Danger Zones Nearby</div>
+        <div class="hud-chip chip-danger">2 Active</div>
+      </div>
+      <div class="zone-list">
+        <div class="zone-item" onclick="focusZone('red1')">
+          <div class="zone-dot" style="background:var(--danger)"></div>
+          <div class="zone-info">
+            <div class="zone-name">MG Road / Infantry Cross</div>
+            <div class="zone-meta">5 incidents last month · Poorly lit</div>
+          </div>
+          <div class="zone-badge zbadge-danger">HIGH RISK</div>
+        </div>
+        <div class="zone-item" onclick="focusZone('warn1')">
+          <div class="zone-dot" style="background:var(--warn)"></div>
+          <div class="zone-info">
+            <div class="zone-name">Trinity Circle Underpass</div>
+            <div class="zone-meta">2 incidents · Limited visibility</div>
+          </div>
+          <div class="zone-badge zbadge-warn">CAUTION</div>
+        </div>
+        <div class="zone-item" onclick="focusZone('safe1')">
+          <div class="zone-dot" style="background:var(--safe)"></div>
+          <div class="zone-info">
+            <div class="zone-name">Cubbon Park Stretch</div>
+            <div class="zone-meta">Well-lit · Police patrol active</div>
+          </div>
+          <div class="zone-badge zbadge-safe">SAFE</div>
+        </div>
+        <div class="zone-item" onclick="focusZone('warn2')">
+          <div class="zone-dot" style="background:var(--warn)"></div>
+          <div class="zone-info">
+            <div class="zone-name">Indiranagar 100ft Road (Night)</div>
+            <div class="zone-meta">3 incidents · Avoid after 11pm</div>
+          </div>
+          <div class="zone-badge zbadge-warn">CAUTION</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- NEARBY POLICE -->
+    <div class="panel">
+      <div class="panel-hdr">
+        <div class="panel-title">🚔 Nearby Police Stations</div>
+        <div class="hud-chip chip-blue">4 within 1km</div>
+      </div>
+      <div class="police-list">
+        <div class="police-item">
+          <div class="police-icon">🚔</div>
+          <div class="police-info">
+            <div class="police-name">Cubbon Park PS</div>
+            <div class="police-meta">24/7 · Women's helpdesk available</div>
+          </div>
+          <div style="text-align:right">
+            <div class="police-dist">0.4 km</div>
+            <button class="call-btn" onclick="callPolice('100')">📞 Call</button>
+          </div>
+        </div>
+        <div class="police-item">
+          <div class="police-icon">🚔</div>
+          <div class="police-info">
+            <div class="police-name">Shivajinagar PS</div>
+            <div class="police-meta">24/7 · Quick response unit</div>
+          </div>
+          <div style="text-align:right">
+            <div class="police-dist">0.8 km</div>
+            <button class="call-btn" onclick="callPolice('100')">📞 Call</button>
+          </div>
+        </div>
+        <div class="police-item">
+          <div class="police-icon">👮</div>
+          <div class="police-info">
+            <div class="police-name">Women's Helpline</div>
+            <div class="police-meta">24/7 · Immediate assistance</div>
+          </div>
+          <div style="text-align:right">
+            <div class="police-dist c-safe">Hotline</div>
+            <button class="call-btn" onclick="callPolice('1091')">📞 1091</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ROUTE TIMELINE -->
+    <div class="panel">
+      <div class="panel-hdr">
+        <div class="panel-title">⏱ Route Timeline</div>
+      </div>
+      <div class="timeline-section">
+        <div class="tl-item">
+          <div class="tl-icon">📍</div>
+          <div class="tl-content">
+            <div class="tl-label">Current Location</div>
+            <div class="tl-meta">Indiranagar, Bengaluru</div>
+            <div class="tl-time" id="tlStart">Start time: --:--</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-icon" style="background:rgba(0,229,160,0.1);border-color:rgba(0,229,160,0.3)">🟢</div>
+          <div class="tl-content">
+            <div class="tl-label c-safe">Safe Zone — MG Road</div>
+            <div class="tl-meta">Well-lit, shops open · Score: 90</div>
+            <div class="tl-time">~3 min in</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-icon" style="background:rgba(255,204,0,0.1);border-color:rgba(255,204,0,0.3)">⚠</div>
+          <div class="tl-content">
+            <div class="tl-label c-warn">Caution — Trinity Cross</div>
+            <div class="tl-meta">Stay on main road · Police 400m</div>
+            <div class="tl-time">~6 min in · Auto check-in</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-icon" style="background:rgba(0,229,160,0.1);border-color:rgba(0,229,160,0.3)">🏁</div>
+          <div class="tl-content">
+            <div class="tl-label c-safe">Destination Arrival</div>
+            <div class="tl-meta">Auto-notify contacts on arrival</div>
+            <div class="tl-time" id="tlETA">ETA: --:--</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SOS OVERLAY -->
+<div class="sos-overlay" id="sosOverlay">
+  <div class="sos-modal">
+    <div class="sos-icon">🆘</div>
+    <div class="sos-title">SOS ACTIVATED</div>
+    <div class="sos-sub">Alerting your emergency contacts and nearest police station</div>
+    <div class="sos-coords-text" id="sosCoords">📍 Getting your location...</div>
+    <button class="sos-cancel" onclick="cancelSOSRoute()">✅ I'm Safe — Cancel SOS</button>
+  </div>
+</div>
+
+<script>
+// Clock
+function updateClock(){
+  const now=new Date();
+  document.getElementById('navClock').textContent=now.toLocaleTimeString();
+  const h=now.getHours(),m=now.getMinutes();
+  document.getElementById('tlStart').textContent=`Start: ${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+  const eta=new Date(now.getTime()+9*60000);
+  document.getElementById('tlETA').textContent=`ETA: ${eta.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}`;
+}
+setInterval(updateClock,1000); updateClock();
+
+// Route Safety Score (mirrors app.js logic)
+function calcRouteScore(){
+  const hour=new Date().getHours();
+  const timeScore=hour>=8&&hour<=20?85:40;
+  const lightScore=hour>=7&&hour<=19?90:35;
+  const crimeScore=50+Math.round(Math.random()*30);
+  const shopScore=hour>=9&&hour<=21?80:30;
+  const overall=Math.round((timeScore+lightScore+crimeScore+shopScore)/4);
+
+  document.getElementById('routeScoreMain').textContent=overall;
+  document.getElementById('routeZoneMain').textContent=overall>=70?'🟢 Safe Zone':overall>=40?'🟡 Caution Zone':'🔴 Danger Zone';
+  document.getElementById('routeScoreMain').style.color=overall>=70?'var(--safe)':overall>=40?'var(--warn)':'var(--danger)';
+  document.getElementById('scoreNumRoute').textContent=overall;
+  document.getElementById('scoreNumRoute').style.color=overall>=70?'var(--safe)':overall>=40?'var(--warn)':'var(--danger)';
+
+  const ring=document.getElementById('scoreRingRoute');
+  ring.style.strokeDashoffset=251.2-(251.2*overall/100);
+  ring.style.stroke=overall>=70?'var(--safe)':overall>=40?'var(--warn)':'var(--danger)';
+
+  const factors=[[timeScore,'f1','ff1'],[lightScore,'f2','ff2'],[crimeScore,'f3','ff3'],[shopScore,'f4','ff4']];
+  factors.forEach(([val,fId,fFill])=>{
+    document.getElementById(fId).textContent=val+'%';
+    document.getElementById(fId).style.color=val>=70?'var(--safe)':val>=40?'var(--warn)':'var(--danger)';
+    document.getElementById(fFill).style.width=val+'%';
+    document.getElementById(fFill).style.background=val>=70?'var(--safe)':val>=40?'var(--warn)':'var(--danger)';
+  });
+  document.getElementById('r1Score').textContent=Math.min(overall+12,99);
+  return overall;
+}
+calcRouteScore();
+setInterval(calcRouteScore,30000);
+
+// MAP CANVAS
+const canvas=document.getElementById('routeMapCanvas');
+const ctx=canvas.getContext('2d');
+let showHeatmap=false;
+let showSafePath=false;
+let animT=0;
+
+function resizeCanvas(){
+  canvas.width=canvas.offsetWidth;
+  canvas.height=canvas.offsetHeight;
+}
+resizeCanvas();
+window.addEventListener('resize',resizeCanvas);
+
+function drawMap(){
+  const w=canvas.width,h=canvas.height;
+  ctx.clearRect(0,0,w,h);
+
+  // Background
+  ctx.fillStyle='#020810';
+  ctx.fillRect(0,0,w,h);
+
+  // Grid
+  ctx.strokeStyle='rgba(100,160,255,0.05)';
+  ctx.lineWidth=1;
+  for(let x=0;x<w;x+=40){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.stroke()}
+  for(let y=0;y<h;y+=40){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke()}
+
+  // Roads
+  ctx.strokeStyle='rgba(100,160,255,0.2)';
+  ctx.lineWidth=6;
+  // Horizontal roads
+  [0.25,0.5,0.75].forEach(r=>{
+    ctx.beginPath();ctx.moveTo(0,h*r);ctx.lineTo(w,h*r);ctx.stroke();
+  });
+  // Vertical roads
+  [0.2,0.45,0.7].forEach(r=>{
+    ctx.beginPath();ctx.moveTo(w*r,0);ctx.lineTo(w*r,h);ctx.stroke();
+  });
+
+  if(showHeatmap){
+    // Red zone
+    const rg=ctx.createRadialGradient(w*0.3,h*0.35,0,w*0.3,h*0.35,80);
+    rg.addColorStop(0,'rgba(255,45,107,0.35)');
+    rg.addColorStop(1,'rgba(255,45,107,0)');
+    ctx.fillStyle=rg;ctx.beginPath();ctx.arc(w*0.3,h*0.35,80,0,Math.PI*2);ctx.fill();
+
+    const wg=ctx.createRadialGradient(w*0.65,h*0.6,0,w*0.65,h*0.6,55);
+    wg.addColorStop(0,'rgba(255,204,0,0.3)');
+    wg.addColorStop(1,'rgba(255,204,0,0)');
+    ctx.fillStyle=wg;ctx.beginPath();ctx.arc(w*0.65,h*0.6,55,0,Math.PI*2);ctx.fill();
+
+    const gg=ctx.createRadialGradient(w*0.5,h*0.2,0,w*0.5,h*0.2,50);
+    gg.addColorStop(0,'rgba(0,229,160,0.25)');
+    gg.addColorStop(1,'rgba(0,229,160,0)');
+    ctx.fillStyle=gg;ctx.beginPath();ctx.arc(w*0.5,h*0.2,50,0,Math.PI*2);ctx.fill();
+  }
+
+  // Safest path
+  if(showSafePath){
+    ctx.strokeStyle='rgba(0,229,160,0.7)';
+    ctx.lineWidth=3;
+    ctx.setLineDash([8,5]);
+    ctx.beginPath();
+    ctx.moveTo(w*0.45,h*0.8);
+    ctx.bezierCurveTo(w*0.45,h*0.5,w*0.5,h*0.3,w*0.7,h*0.2);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  // User marker (animated)
+  const ux=w*0.45,uy=h*0.78;
+  const pulse=(Math.sin(animT*0.05)+1)*0.5;
+  ctx.beginPath();ctx.arc(ux,uy,14+pulse*8,0,Math.PI*2);
+  ctx.fillStyle=`rgba(26,140,255,${0.1+pulse*0.1})`;ctx.fill();
+  ctx.beginPath();ctx.arc(ux,uy,10,0,Math.PI*2);
+  ctx.fillStyle='rgba(26,140,255,0.2)';ctx.fill();
+  ctx.beginPath();ctx.arc(ux,uy,5,0,Math.PI*2);
+  ctx.fillStyle='var(--blue)';ctx.fill();
+  ctx.fillStyle='#fff';ctx.font='bold 8px JetBrains Mono';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('YOU',ux,uy);
+
+  // Destination
+  const dx=w*0.72,dy=h*0.18;
+  ctx.beginPath();ctx.arc(dx,dy,8,0,Math.PI*2);
+  ctx.fillStyle='var(--safe)';ctx.fill();
+  ctx.fillStyle='var(--card)';ctx.font='bold 10px JetBrains Mono';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('D',dx,dy);
+
+  // Zone markers
+  ctx.font='16px serif';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('⚠',w*0.3,h*0.35);
+  ctx.fillText('⚠',w*0.65,h*0.6);
+  ctx.fillText('✓',w*0.5,h*0.2);
+
+  animT++;
+  requestAnimationFrame(drawMap);
+}
+drawMap();
+
+function showSafestPath(){
+  showSafePath=!showSafePath;
+  document.getElementById('btnSafestPath').classList.toggle('active',showSafePath);
+}
+function toggleHeatmap(){showHeatmap=!showHeatmap}
+function recenterMap(){}
+function focusZone(z){console.log('Focus zone:',z)}
+function selectRoute(idx){console.log('Route selected:',idx)}
+
+// Detect Location
+function detectLocation(){
+  if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(pos=>{
+      const {latitude:lat,longitude:lng}=pos.coords;
+      document.getElementById('fromInput').value=`${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+      document.getElementById('gpsCoordChip').textContent=`${lat.toFixed(4)}°N ${lng.toFixed(4)}°E`;
+    },()=>{
+      document.getElementById('fromInput').value='Bengaluru, Karnataka (GPS unavailable)';
+    });
+  }
+}
+detectLocation();
+
+function analyseRoute(){
+  const to=document.getElementById('toInput').value;
+  if(!to){document.getElementById('toInput').focus();return;}
+  calcRouteScore();
+  showSafePath=true;
+  showHeatmap=true;
+}
+
+function startNavigation(){alert('Navigation started! Auto check-in will activate every 5 minutes.')}
+function shareLocation(){
+  if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(pos=>{
+      const url=`https://maps.google.com/?q=${pos.coords.latitude},${pos.coords.longitude}`;
+      if(navigator.share){navigator.share({title:'My Location',url})}
+      else{navigator.clipboard.writeText(url).then(()=>alert('Location link copied!'))}
+    })
+  }
+}
+function callPolice(num){alert(`Calling ${num}...`)}
+
+function triggerSOSRoute(){
+  document.getElementById('sosOverlay').classList.add('show');
+  if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(pos=>{
+      document.getElementById('sosCoords').textContent=`📍 ${pos.coords.latitude.toFixed(5)}, ${pos.coords.longitude.toFixed(5)} — Sending to contacts…`;
+    });
+  }
+}
+function cancelSOSRoute(){document.getElementById('sosOverlay').classList.remove('show')}
+</script>
+</body>
+</html>

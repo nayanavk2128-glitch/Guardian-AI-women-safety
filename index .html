@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guardian AI — Women & Children Safety Intelligence</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #03050d;
+  --surface: #080d1a;
+  --card: #0c1220;
+  --card2: #0f1628;
+  --border: rgba(100,160,255,0.08);
+  --border2: rgba(100,160,255,0.15);
+  --accent: #ff2d6b;
+  --accent2: #ff6b35;
+  --blue: #1a8cff;
+  --safe: #00e5a0;
+  --warn: #ffcc00;
+  --danger: #ff2d6b;
+  --purple: #a855f7;
+  --text: #e8f0ff;
+  --muted: #4a6080;
+  --glow-r: rgba(255,45,107,0.3);
+  --glow-b: rgba(26,140,255,0.3);
+  --glow-g: rgba(0,229,160,0.3);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  background:var(--bg);color:var(--text);
+  font-family:'Space Grotesk',sans-serif;
+  min-height:100vh;overflow-x:hidden;
+}
+
+/* ── ANIMATED BACKGROUND ── */
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(ellipse 70% 50% at 85% 5%,rgba(255,45,107,0.06) 0%,transparent 65%),
+    radial-gradient(ellipse 50% 60% at 5% 90%,rgba(26,140,255,0.07) 0%,transparent 65%),
+    radial-gradient(ellipse 40% 40% at 50% 50%,rgba(168,85,247,0.03) 0%,transparent 60%);
+}
+.grid-bg{
+  position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:
+    linear-gradient(rgba(100,160,255,0.03) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(100,160,255,0.03) 1px,transparent 1px);
+  background-size:48px 48px;
+}
+.scanline{
+  position:fixed;top:0;left:0;width:100%;height:100%;
+  pointer-events:none;z-index:9999;
+  background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(26,140,255,0.008) 3px,rgba(26,140,255,0.008) 4px);
+}
+
+/* ── NAVBAR ── */
+nav{
+  position:sticky;top:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 32px;
+  background:rgba(3,5,13,0.92);
+  backdrop-filter:blur(24px);
+  border-bottom:1px solid var(--border2);
+  box-shadow:0 1px 0 rgba(255,45,107,0.1);
+}
+.nav-logo{display:flex;align-items:center;gap:12px}
+.shield-icon{
+  width:40px;height:40px;border-radius:12px;
+  background:linear-gradient(135deg,var(--accent),#8b0033);
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;
+  box-shadow:0 0 24px var(--glow-r);
+  animation:shield-pulse 2.5s ease-in-out infinite;
+}
+@keyframes shield-pulse{0%,100%{box-shadow:0 0 24px var(--glow-r)}50%{box-shadow:0 0 40px rgba(255,45,107,0.6)}}
+.nav-brand{font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;letter-spacing:1px}
+.nav-brand em{font-style:normal;color:var(--accent)}
+.nav-sub{font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-top:1px}
+.nav-center{display:flex;align-items:center;gap:20px}
+.sys-badge{
+  display:flex;align-items:center;gap:6px;
+  padding:5px 14px;border-radius:20px;
+  font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;
+}
+.sys-badge.online{background:rgba(0,229,160,0.1);border:1px solid rgba(0,229,160,0.25);color:var(--safe)}
+.sys-badge.sos-mode{background:rgba(255,45,107,0.15);border:1px solid rgba(255,45,107,0.4);color:var(--accent);animation:blink 0.8s infinite}
+.pulse-dot{width:7px;height:7px;border-radius:50%;background:currentColor}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+.nav-clock{font-family:'JetBrains Mono',monospace;font-size:14px;color:var(--blue)}
+.nav-right{display:flex;gap:10px;align-items:center}
+.btn-nav{
+  padding:7px 18px;border-radius:8px;border:none;cursor:pointer;
+  font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:600;
+  transition:all 0.2s;
+}
+.btn-sos-nav{
+  background:linear-gradient(135deg,var(--accent),#8b0033);
+  color:#fff;box-shadow:0 0 20px rgba(255,45,107,0.35);
+}
+.btn-sos-nav:hover{transform:scale(1.04);box-shadow:0 0 35px rgba(255,45,107,0.6)}
+.btn-stealth{background:rgba(255,255,255,0.06);border:1px solid var(--border2);color:var(--muted)}
+.btn-stealth:hover{color:var(--text);border-color:var(--border2)}
+
+/* ── LAYOUT ── */
+.wrap{max-width:1440px;margin:0 auto;padding:24px 32px;position:relative;z-index:1}
+
+/* ── HERO STATS ── */
+.hero-row{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:22px}
+.hcard{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:14px;padding:18px 20px;position:relative;overflow:hidden;
+  transition:transform 0.2s,border-color 0.2s;
+}
+.hcard:hover{transform:translateY(-2px);border-color:var(--border2)}
+.hcard::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--accent),transparent);
+}
+.hcard.blue::before{background:linear-gradient(90deg,var(--blue),transparent)}
+.hcard.green::before{background:linear-gradient(90deg,var(--safe),transparent)}
+.hcard.warn::before{background:linear-gradient(90deg,var(--warn),transparent)}
+.hcard.purple::before{background:linear-gradient(90deg,var(--purple),transparent)}
+.hc-label{font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-bottom:8px}
+.hc-val{font-family:'Rajdhani',sans-serif;font-size:38px;font-weight:700;line-height:1}
+.hc-val.c-safe{color:var(--safe)}.hc-val.c-blue{color:var(--blue)}
+.hc-val.c-warn{color:var(--warn)}.hc-val.c-danger{color:var(--danger)}.hc-val.c-purple{color:var(--purple)}
+.hc-sub{font-size:11px;color:var(--muted);margin-top:5px}
+.hc-badge{
+  position:absolute;top:14px;right:14px;
+  padding:2px 9px;border-radius:20px;font-size:10px;font-weight:600;
+}
+.badge-safe{background:rgba(0,229,160,0.12);color:var(--safe)}
+.badge-warn{background:rgba(255,204,0,0.12);color:var(--warn)}
+.badge-danger{background:rgba(255,45,107,0.12);color:var(--danger)}
+.badge-blue{background:rgba(26,140,255,0.12);color:var(--blue)}
+
+/* ── MAIN GRID ── */
+.main-grid{display:grid;grid-template-columns:1fr 320px;gap:18px;margin-bottom:18px}
+
+/* ── PANELS ── */
+.panel{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden}
+.panel-hdr{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 18px;border-bottom:1px solid var(--border);
+}
+.panel-title{
+  font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:600;
+  letter-spacing:0.5px;display:flex;align-items:center;gap:8px;
+}
+.dot-blink{width:7px;height:7px;border-radius:50%;background:var(--accent);animation:blink 1.5s infinite}
+.dot-blink.blue{background:var(--blue)}
+.dot-blink.green{background:var(--safe)}
+
+/* ── CAMERA ── */
+.cam-wrap{
+  position:relative;background:#030810;
+  aspect-ratio:16/9;overflow:hidden;display:flex;align-items:center;justify-content:center;
+}
+#videoFeed{width:100%;height:100%;object-fit:cover;display:none}
+#camCanvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.cam-offline{display:flex;flex-direction:column;align-items:center;gap:14px;color:var(--muted)}
+.cam-offline svg{opacity:0.2}
+.cam-offline-txt{font-size:14px;letter-spacing:1px}
+.cam-scan-line{
+  position:absolute;width:100%;height:2px;
+  background:linear-gradient(90deg,transparent,var(--safe),transparent);
+  animation:camScan 3s linear infinite;pointer-events:none;
+}
+@keyframes camScan{0%{top:-2px}100%{top:101%}}
+.cam-hud-tl{position:absolute;top:12px;left:12px;display:flex;flex-direction:column;gap:5px}
+.cam-hud-tr{position:absolute;top:12px;right:12px;text-align:right}
+.hud-label{
+  font-family:'JetBrains Mono',monospace;font-size:10px;
+  color:var(--safe);letter-spacing:1px;opacity:0.9;
+}
+.hud-badge{
+  display:inline-block;padding:3px 10px;border-radius:4px;font-size:10px;
+  font-family:'JetBrains Mono',monospace;letter-spacing:1px;
+  background:rgba(0,229,160,0.12);color:var(--safe);border:1px solid rgba(0,229,160,0.25);
+}
+.face-box-wrap{position:absolute;width:100%;height:100%;pointer-events:none}
+.face-target{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-60%);
+  width:90px;height:110px;
+}
+.corner{position:absolute;width:14px;height:14px;border-color:var(--safe);border-style:solid}
+.corner.tl{top:0;left:0;border-width:2px 0 0 2px}
+.corner.tr{top:0;right:0;border-width:2px 2px 0 0}
+.corner.bl{bottom:0;left:0;border-width:0 0 2px 2px}
+.corner.br{bottom:0;right:0;border-width:0 2px 2px 0}
+.face-expr-tag{
+  position:absolute;bottom:-22px;left:50%;transform:translateX(-50%);
+  padding:2px 12px;border-radius:4px;font-size:10px;letter-spacing:1px;white-space:nowrap;
+  background:rgba(0,229,160,0.15);color:var(--safe);border:1px solid rgba(0,229,160,0.3);
+  font-family:'JetBrains Mono',monospace;
+}
+.cam-controls{padding:14px 18px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.btn-ctrl{
+  padding:7px 16px;border-radius:8px;border:1px solid var(--border2);
+  background:transparent;color:var(--text);cursor:pointer;font-size:12px;
+  font-family:'Space Grotesk',sans-serif;font-weight:500;transition:all 0.2s;
+}
+.btn-ctrl:hover{border-color:var(--accent);color:var(--accent)}
+.btn-ctrl.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn-ctrl.active-blue{background:var(--blue);border-color:var(--blue);color:#fff}
+#camStatusBadge{margin-left:auto;padding:5px 14px;border-radius:20px;font-size:11px;font-weight:600;letter-spacing:1px;background:rgba(255,255,255,0.05);color:var(--muted);border:1px solid var(--border)}
+#camStatusBadge.safe{background:rgba(0,229,160,0.12);color:var(--safe);border-color:rgba(0,229,160,0.25)}
+#camStatusBadge.danger{background:rgba(255,45,107,0.12);color:var(--danger);border-color:rgba(255,45,107,0.25);animation:blink 1s infinite}
+
+/* ── SCORE PANEL ── */
+.score-panel{display:flex;flex-direction:column;gap:0}
+.score-ring-area{padding:20px;display:flex;flex-direction:column;align-items:center;gap:14px}
+.score-ring{position:relative;width:130px;height:130px}
+.score-ring svg{transform:rotate(-90deg)}
+.ring-bg{fill:none;stroke:rgba(255,255,255,0.05);stroke-width:10}
+.ring-fill{fill:none;stroke:var(--safe);stroke-width:10;stroke-linecap:round;stroke-dasharray:339;stroke-dashoffset:68;transition:stroke-dashoffset 1s ease,stroke 0.5s}
+.ring-label{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ring-num{font-family:'Rajdhani',sans-serif;font-size:34px;font-weight:700;color:var(--safe)}
+.ring-sub{font-size:9px;color:var(--muted);letter-spacing:2px;text-transform:uppercase}
+.score-factors{padding:0 18px 14px}
+.factor{margin-bottom:10px}
+.factor-top{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:5px}
+.factor-bar{height:4px;background:rgba(255,255,255,0.05);border-radius:2px;overflow:hidden}
+.factor-fill{height:100%;border-radius:2px;transition:width 1s ease}
+.score-alerts{border-top:1px solid var(--border);padding:14px 18px;display:flex;flex-direction:column;gap:7px;max-height:160px;overflow-y:auto}
+.al-item{
+  display:flex;align-items:flex-start;gap:9px;padding:8px 10px;
+  border-radius:8px;font-size:11px;border-left:2px solid;
+}
+.al-item.g{background:rgba(0,229,160,0.06);border-color:var(--safe);color:var(--safe)}
+.al-item.y{background:rgba(255,204,0,0.06);border-color:var(--warn);color:var(--warn)}
+.al-item.r{background:rgba(255,45,107,0.06);border-color:var(--danger);color:var(--danger)}
+.al-item.b{background:rgba(26,140,255,0.06);border-color:var(--blue);color:var(--blue)}
+.al-time{margin-left:auto;opacity:0.5;white-space:nowrap;font-size:10px}
+
+/* ── BOTTOM GRID ── */
+.bottom-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:18px;margin-bottom:18px}
+
+/* ── AUDIO ── */
+.audio-panel .waveform-area{
+  padding:14px 18px;background:#050c18;border-bottom:1px solid var(--border);
+  height:70px;position:relative;overflow:hidden;
+}
+#waveCanvas{width:100%;height:100%;display:block}
+.audio-metrics{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;border-top:1px solid var(--border)}
+.am{padding:14px 10px;text-align:center;border-right:1px solid var(--border)}
+.am:last-child{border-right:none}
+.am-val{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:500;color:var(--blue)}
+.am-val.safe{color:var(--safe)}.am-val.warn{color:var(--warn)}.am-val.danger{color:var(--danger)}
+.am-lbl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;margin-top:4px}
+
+/* ── KEYWORD PANEL ── */
+.kw-list{padding:14px 18px;display:flex;flex-direction:column;gap:6px}
+.kw-item{
+  display:flex;align-items:center;gap:10px;padding:7px 12px;
+  border-radius:8px;font-size:12px;
+  background:rgba(255,255,255,0.03);border:1px solid var(--border);
+  transition:all 0.3s;
+}
+.kw-item.triggered{
+  background:rgba(255,45,107,0.1);border-color:var(--danger);
+  color:var(--danger);animation:blink 0.5s infinite;
+}
+.kw-dot{width:6px;height:6px;border-radius:50%;background:var(--muted)}
+.kw-item.triggered .kw-dot{background:var(--danger)}
+.kw-badge{margin-left:auto;font-size:10px;opacity:0.6}
+
+/* ── GESTURE ── */
+.gesture-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:14px}
+.g-item{
+  background:rgba(255,255,255,0.03);border:1px solid var(--border);
+  border-radius:10px;padding:12px 10px;text-align:center;transition:all 0.3s;
+}
+.g-item.active-g{border-color:var(--danger);background:rgba(255,45,107,0.08)}
+.g-item.safe-g{border-color:var(--safe);background:rgba(0,229,160,0.07)}
+.g-icon{font-size:22px;margin-bottom:5px}
+.g-name{font-size:10px;color:var(--muted);margin-bottom:4px}
+.g-status{font-size:11px;font-weight:600;color:var(--muted)}
+.g-item.active-g .g-status{color:var(--danger)}
+.g-item.safe-g .g-status{color:var(--safe)}
+
+/* ── MOTION ── */
+.motion-metrics{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:14px}
+.mm{
+  background:rgba(255,255,255,0.03);border:1px solid var(--border);
+  border-radius:10px;padding:12px;text-align:center;
+}
+.mm-val{font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:500;color:var(--blue)}
+.mm-val.safe{color:var(--safe)}.mm-val.warn{color:var(--warn)}.mm-val.danger{color:var(--danger)}
+.mm-lbl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:4px}
+.shake-bar{padding:0 14px 14px;display:flex;align-items:center;gap:8px}
+.shake-steps{display:flex;gap:4px;flex:1}
+.shake-step{flex:1;height:8px;border-radius:4px;background:rgba(255,255,255,0.05);border:1px solid var(--border);transition:all 0.3s}
+.shake-step.on{background:var(--warn);border-color:var(--warn);box-shadow:0 0 10px rgba(255,204,0,0.4)}
+.shake-label{font-size:10px;color:var(--muted)}
+
+/* ── ROUTE MAP ── */
+.map-section{margin-bottom:18px}
+.map-section .panel{overflow:visible}
+#routeMap{height:200px;background:#030810;position:relative;overflow:hidden;border-radius:0 0 0 0}
+#mapCanvas{width:100%;height:100%;display:block}
+.route-info{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--border)}
+.rm{padding:14px 18px;border-right:1px solid var(--border)}
+.rm:last-child{border-right:none}
+.rm-val{font-family:'JetBrains Mono',monospace;font-size:16px;color:var(--safe);font-weight:500}
+.rm-lbl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;margin-top:4px}
+
+/* ── AI FEED ── */
+.feed-section{margin-bottom:18px}
+.feed-list{
+  max-height:220px;overflow-y:auto;padding:12px 18px;
+  display:flex;flex-direction:column;gap:6px;
+}
+.feed-list::-webkit-scrollbar{width:4px}
+.feed-list::-webkit-scrollbar-track{background:transparent}
+.feed-list::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+.feed-item{
+  display:flex;align-items:flex-start;gap:10px;
+  padding:8px 10px;border-radius:8px;font-size:12px;
+  background:rgba(255,255,255,0.02);border:1px solid var(--border);
+  animation:feedIn 0.3s ease;
+}
+@keyframes feedIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.feed-dot{width:6px;height:6px;border-radius:50%;margin-top:3px;flex-shrink:0}
+.feed-msg{color:var(--text);line-height:1.4}
+.feed-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.feed-time{margin-left:auto;font-size:10px;color:var(--muted);white-space:nowrap;font-family:'JetBrains Mono',monospace}
+
+/* ── AI CONSOLE ── */
+.console-section{margin-bottom:18px}
+.console-body{
+  padding:14px 18px;font-family:'JetBrains Mono',monospace;font-size:11px;
+  background:#030810;min-height:120px;max-height:160px;overflow-y:auto;
+  display:flex;flex-direction:column;gap:3px;
+}
+.console-line{line-height:1.6}
+.console-line.green{color:var(--safe)}.console-line.blue{color:var(--blue)}
+.console-line.yellow{color:var(--warn)}.console-line.red{color:var(--danger)}
+.console-line.muted{color:var(--muted)}
+
+/* ── SOS OVERLAY ── */
+#sosOverlay{
+  position:fixed;inset:0;z-index:9000;
+  background:rgba(0,0,0,0.97);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;
+  opacity:0;pointer-events:none;transition:opacity 0.3s;
+}
+#sosOverlay.show{opacity:1;pointer-events:all}
+.sos-icon{font-size:80px;animation:shake 0.3s infinite}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.sos-title{
+  font-family:'Rajdhani',sans-serif;font-size:52px;font-weight:700;
+  color:var(--accent);letter-spacing:4px;text-shadow:0 0 40px var(--accent);
+  animation:blink 0.5s infinite;
+}
+.sos-msg{font-size:16px;color:rgba(255,255,255,0.7);text-align:center}
+.sos-gps{
+  font-family:'JetBrains Mono',monospace;font-size:14px;
+  padding:10px 24px;border-radius:8px;background:rgba(255,255,255,0.05);
+  border:1px solid rgba(255,255,255,0.1);color:var(--safe);
+}
+.sos-contacts{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
+.contact-pill{
+  padding:8px 18px;border-radius:30px;font-size:13px;
+  background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);
+  display:flex;align-items:center;gap:7px;
+}
+.contact-pill.sent{border-color:var(--safe);color:var(--safe)}
+.btn-cancel-sos{
+  padding:12px 36px;border-radius:10px;border:1px solid rgba(255,255,255,0.2);
+  background:transparent;color:var(--text);cursor:pointer;font-size:14px;
+  font-family:'Space Grotesk',sans-serif;font-weight:600;transition:all 0.2s;
+}
+.btn-cancel-sos:hover{background:rgba(255,255,255,0.08)}
+.sos-timer{font-family:'JetBrains Mono',monospace;font-size:40px;color:var(--accent)}
+
+/* ── STEALTH OVERLAY ── */
+#stealthOverlay{
+  position:fixed;inset:0;z-index:8999;
+  background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity 0.4s;cursor:pointer;
+}
+#stealthOverlay.show{opacity:1;pointer-events:all}
+.stealth-icon{font-size:60px;margin-bottom:12px;opacity:0.6}
+.stealth-txt{color:rgba(255,255,255,0.3);font-size:14px;letter-spacing:2px}
+
+/* ── CHECK-IN BANNER ── */
+.checkin-banner{
+  position:fixed;bottom:28px;left:50%;transform:translateX(-50%);
+  padding:18px 32px;border-radius:16px;z-index:8000;
+  font-family:'Space Grotesk',sans-serif;text-align:center;
+  min-width:340px;cursor:pointer;transition:all 0.3s;
+  background:rgba(255,204,0,0.15);border:1px solid rgba(255,204,0,0.4);
+  box-shadow:0 8px 40px rgba(0,0,0,0.5);
+  animation:slideUp 0.4s ease;display:none;
+}
+.checkin-banner.show{display:block}
+@keyframes slideUp{from{transform:translate(-50%,20px);opacity:0}to{transform:translateX(-50%);opacity:1}}
+.checkin-title{font-size:15px;font-weight:700;color:var(--warn);margin-bottom:6px}
+.checkin-sub{font-size:12px;color:rgba(255,255,255,0.6)}
+
+/* ── TAGS ── */
+.tag{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:3px 10px;border-radius:20px;font-size:10px;letter-spacing:1px;
+  background:rgba(168,85,247,0.1);color:var(--purple);border:1px solid rgba(168,85,247,0.25);
+}
+.tag.blue{background:rgba(26,140,255,0.1);color:var(--blue);border-color:rgba(26,140,255,0.25)}
+.tag.green{background:rgba(0,229,160,0.1);color:var(--safe);border-color:rgba(0,229,160,0.25)}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+
+/* ── RESPONSIVE ── */
+@media(max-width:1200px){
+  .hero-row{grid-template-columns:repeat(3,1fr)}
+  .main-grid{grid-template-columns:1fr}
+  .bottom-grid{grid-template-columns:1fr 1fr}
+}
+@media(max-width:768px){
+  .wrap{padding:14px 16px}
+  nav{padding:12px 16px}
+  .hero-row{grid-template-columns:1fr 1fr}
+  .bottom-grid{grid-template-columns:1fr}
+  .route-info{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="scanline"></div>
+
+<!-- NAVBAR -->
+<nav>
+  <div class="nav-logo">
+    <div class="shield-icon">🛡</div>
+    <div>
+      <div class="nav-brand">GUARDIAN<em> AI</em></div>
+      <div class="nav-sub">Women & Children Safety Intelligence</div>
+    </div>
+  </div>
+  <div class="nav-center">
+    <div class="sys-badge online" id="sysBadge">
+      <div class="pulse-dot"></div>
+      <span id="sysLabel">ALL SYSTEMS ACTIVE</span>
+    </div>
+    <div class="nav-clock" id="navClock">--:--:--</div>
+  </div>
+  <div class="nav-right">
+    <button class="btn-nav btn-stealth" onclick="toggleStealth()">🔒 Stealth</button>
+    <button class="btn-nav btn-sos-nav" onclick="triggerSOS()">🆘 SOS NOW</button>
+  </div>
+</nav>
+
+<div class="wrap">
+
+  <!-- HERO STATS -->
+  <div class="hero-row">
+    <div class="hcard">
+      <div class="hc-label">Safety Score</div>
+      <div class="hc-val c-safe" id="safetyScoreHero">78</div>
+      <div class="hc-sub">Route intelligence</div>
+      <span class="hc-badge badge-safe" id="scoreBadge">SAFE</span>
+    </div>
+    <div class="hcard blue">
+      <div class="hc-label">Heart Rate</div>
+      <div class="hc-val c-blue" id="heroHR">72 <small style="font-size:16px">bpm</small></div>
+      <div class="hc-sub">Estimated via motion</div>
+      <span class="hc-badge badge-blue">NORMAL</span>
+    </div>
+    <div class="hcard green">
+      <div class="hc-label">Steps / Min</div>
+      <div class="hc-val c-safe" id="heroSteps">82</div>
+      <div class="hc-sub">Normal pace</div>
+      <span class="hc-badge badge-safe">WALKING</span>
+    </div>
+    <div class="hcard warn">
+      <div class="hc-label">Shake Count</div>
+      <div class="hc-val c-warn" id="heroShake">0<small style="font-size:16px">/3</small></div>
+      <div class="hc-sub">3 shakes = SOS</div>
+      <span class="hc-badge badge-warn">WATCHING</span>
+    </div>
+    <div class="hcard purple">
+      <div class="hc-label">AI Alerts</div>
+      <div class="hc-val c-purple" id="heroAlerts">0</div>
+      <div class="hc-sub">Today's detections</div>
+      <span class="hc-badge" style="background:rgba(168,85,247,0.12);color:var(--purple)">AI ACTIVE</span>
+    </div>
+  </div>
+
+  <!-- MAIN GRID: Camera + Score -->
+  <div class="main-grid">
+
+    <!-- CAMERA PANEL -->
+    <div class="panel camera-panel">
+      <div class="panel-hdr">
+        <div class="panel-title"><span class="dot-blink"></span> Live Camera — Face & Emotion AI</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span class="tag">MediaPipe</span>
+          <span class="tag blue">OpenCV</span>
+          <div id="camStatusBadge">STANDBY</div>
+        </div>
+      </div>
+      <div class="cam-wrap">
+        <video id="videoFeed" autoplay playsinline muted></video>
+        <canvas id="camCanvas"></canvas>
+        <div class="cam-offline" id="camOffline">
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+            <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/>
+            <circle cx="12" cy="13" r="4"/>
+          </svg>
+          <div class="cam-offline-txt">CAMERA OFFLINE — Click "Start Camera"</div>
+          <div style="font-size:11px;color:var(--muted)">Face detection • Emotion AI • Gesture recognition</div>
+        </div>
+        <div class="cam-scan-line" id="camScanLine"></div>
+
+        <!-- HUD overlays -->
+        <div class="cam-hud-tl">
+          <div class="hud-label">◉ GUARDIAN AI LIVE</div>
+          <div class="hud-label" id="hudExpr" style="color:var(--safe)">EXPR: CALM [0.91]</div>
+          <div class="hud-label" style="color:var(--blue)">MODEL: XGBOOST + RF</div>
+        </div>
+        <div class="cam-hud-tr">
+          <div class="hud-badge" id="hudBadge">MONITORING</div>
+          <div class="hud-label" style="margin-top:4px" id="hudGps">GPS: ACQUIRING</div>
+        </div>
+
+        <!-- Face detection box -->
+        <div class="face-box-wrap">
+          <div class="face-target">
+            <div class="corner tl"></div>
+            <div class="corner tr"></div>
+            <div class="corner bl"></div>
+            <div class="corner br"></div>
+            <div class="face-expr-tag" id="faceExprTag">CALM ✓</div>
+          </div>
+        </div>
+      </div>
+      <div class="cam-controls">
+        <button class="btn-ctrl" id="btnStartCam" onclick="startCamera()">📷 Start Camera</button>
+        <button class="btn-ctrl" onclick="stopCamera()">■ Stop</button>
+        <button class="btn-ctrl" onclick="captureSnapshot()">📸 Snapshot</button>
+        <button class="btn-ctrl" id="btnMic" onclick="toggleMic()">🎙 Start Mic</button>
+        <button class="btn-ctrl" onclick="getLocation()">📍 Get GPS</button>
+      </div>
+    </div>
+
+    <!-- SCORE PANEL -->
+    <div class="panel score-panel">
+      <div class="panel-hdr">
+        <div class="panel-title"><span class="dot-blink green"></span> Route Safety Score</div>
+        <button class="btn-ctrl" onclick="calcRouteSafetyScore()" style="font-size:11px;padding:5px 12px">Refresh</button>
+      </div>
+      <div class="score-ring-area">
+        <div class="score-ring">
+          <svg width="130" height="130" viewBox="0 0 130 130">
+            <circle class="ring-bg" cx="65" cy="65" r="54"/>
+            <circle class="ring-fill" id="scoreRing" cx="65" cy="65" r="54"/>
+          </svg>
+          <div class="ring-label">
+            <div class="ring-num" id="scoreNum">78</div>
+            <div class="ring-sub">/ 100</div>
+          </div>
+        </div>
+        <div style="text-align:center">
+          <div style="font-size:13px;font-weight:600" id="routeZone">🟢 Safe Zone</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px" id="routeCoords">Acquiring coordinates…</div>
+        </div>
+      </div>
+      <div class="score-factors">
+        <div class="factor">
+          <div class="factor-top"><span>Time of Day</span><span id="f1">70%</span></div>
+          <div class="factor-bar"><div class="factor-fill" id="ff1" style="width:70%;background:var(--safe)"></div></div>
+        </div>
+        <div class="factor">
+          <div class="factor-top"><span>Street Lighting</span><span id="f2">85%</span></div>
+          <div class="factor-bar"><div class="factor-fill" id="ff2" style="width:85%;background:var(--safe)"></div></div>
+        </div>
+        <div class="factor">
+          <div class="factor-top"><span>Crime Index</span><span id="f3">60%</span></div>
+          <div class="factor-bar"><div class="factor-fill" id="ff3" style="width:60%;background:var(--warn)"></div></div>
+        </div>
+        <div class="factor">
+          <div class="factor-top"><span>Crowd / Shops Nearby</span><span id="f4">80%</span></div>
+          <div class="factor-bar"><div class="factor-fill" id="ff4" style="width:80%;background:var(--safe)"></div></div>
+        </div>
+      </div>
+      <div class="score-alerts" id="alertsMini">
+        <div class="al-item g"><span>✅</span><span>All systems normal</span><span class="al-time">now</span></div>
+        <div class="al-item b"><span>📍</span><span>GPS tracking active</span><span class="al-time">1m</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTTOM 4-GRID -->
+  <div class="bottom-grid">
+
+    <!-- AUDIO ANALYSIS -->
+    <div class="panel audio-panel">
+      <div class="panel-hdr">
+        <div class="panel-title"><span class="dot-blink blue"></span> Audio Analysis</div>
+        <span class="tag">ML Classify</span>
+      </div>
+      <div class="audio-panel">
+        <div style="padding:12px 18px;background:#030810;height:68px;position:relative;overflow:hidden">
+          <canvas id="waveCanvas" style="width:100%;height:100%;display:block"></canvas>
+        </div>
+      </div>
+      <div class="audio-metrics">
+        <div class="am">
+          <div class="am-val safe" id="audioLevel">0</div>
+          <div class="am-lbl">dB Level</div>
+        </div>
+        <div class="am">
+          <div class="am-val" id="audioClass">Quiet</div>
+          <div class="am-lbl">Classification</div>
+        </div>
+        <div class="am">
+          <div class="am-val safe" id="audioRisk">Low</div>
+          <div class="am-lbl">Threat</div>
+        </div>
+      </div>
+      <div style="padding:10px 18px;border-top:1px solid var(--border)">
+        <div style="font-size:10px;color:var(--muted);margin-bottom:6px;letter-spacing:1px;text-transform:uppercase">Voice Keywords</div>
+        <div style="display:flex;flex-wrap:wrap;gap:5px" id="kwTags">
+          <span style="padding:2px 9px;border-radius:12px;font-size:10px;background:rgba(255,255,255,0.05);color:var(--muted);border:1px solid var(--border)">help</span>
+          <span style="padding:2px 9px;border-radius:12px;font-size:10px;background:rgba(255,255,255,0.05);color:var(--muted);border:1px solid var(--border)">assist</span>
+          <span style="padding:2px 9px;border-radius:12px;font-size:10px;background:rgba(255,255,255,0.05);color:var(--muted);border:1px solid var(--border)">emergency</span>
+          <span style="padding:2px 9px;border-radius:12px;font-size:10px;background:rgba(255,255,255,0.05);color:var(--muted);border:1px solid var(--border)">bachao</span>
+          <span style="padding:2px 9px;border-radius:12px;font-size:10px;background:rgba(255,255,255,0.05);color:var(--muted);border:1px solid var(--border)">police</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- GESTURE DETECTION -->
+    <div class="panel">
+      <div class="panel-hdr">
+        <div class="panel-title"><span class="dot-blink"></span> Gesture Detection</div>
+        <span class="tag">MediaPipe Hands</span>
+      </div>
+      <div class="gesture-grid">
+        <div class="g-item" id="g-help">
+          <div class="g-icon">🤚</div>
+          <div class="g-name">Signal for Help</div>
+          <div class="g-status" id="gs-help">Watching</div>
+        </div>
+        <div class="g-item" id="g-wave">
+          <div class="g-icon">👋</div>
+          <div class="g-name">Distress Wave</div>
+          <div class="g-status" id="gs-wave">Watching</div>
+        </div>
+        <div class="g-item" id="g-fist">
+          <div class="g-icon">✊</div>
+          <div class="g-name">Fist (Distress)</div>
+          <div class="g-status" id="gs-fist">Watching</div>
+        </div>
+        <div class="g-item safe-g" id="g-ok">
+          <div class="g-icon">👍</div>
+          <div class="g-name">Thumbs Up (Safe)</div>
+          <div class="g-status" id="gs-ok">Detected</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MOTION & BIOMETRICS -->
+    <div class="panel">
+      <div class="panel-hdr">
+        <div class="panel-title"><span class="dot-blink green"></span> Motion & Biometrics</div>
+        <button class="btn-ctrl" onclick="requestMotion()" style="font-size:11px;padding:5px 12px">Enable</button>
+      </div>
+      <div class="motion-metrics">
+        <div class="mm">
+          <div class="mm-val safe" id="stepCount">0</div>
+          <div class="mm-lbl">Steps/min</div>
+        </div>
+        <div class="mm">
+          <div class="mm-val" id="heartRate">--</div>
+          <div class="mm-lbl">Heart Rate</div>
+        </div>
+        <div class="mm">
+          <div class="mm-val" id="motionState">Still</div>
+          <div class="mm-lbl">State</div>
+        </div>
+        <div class="mm">
+          <div class="mm-val" id="gpsStatus">--</div>
+          <div class="mm-lbl">GPS Lock</div>
+        </div>
+      </div>
+      <div class="shake-bar">
+        <div class="shake-steps">
+          <div class="shake-step" id="sh1"></div>
+          <div class="shake-step" id="sh2"></div>
+          <div class="shake-step" id="sh3"></div>
+        </div>
+        <div class="shake-label">Shake 3× → SOS</div>
+      </div>
+    </div>
+
+    <!-- AI CONSOLE -->
+    <div class="panel">
+      <div class="panel-hdr">
+        <div class="panel-title"><span class="dot-blink blue"></span> AI Console</div>
+        <span class="tag blue">XGBoost + RF</span>
+      </div>
+      <div class="console-body" id="consoleBody">
+        <div class="console-line muted"># Guardian AI v2.0 — AIML Domain</div>
+        <div class="console-line green">&gt; models.load("xgboost", "random_forest")</div>
+        <div class="console-line blue">&gt; camera.init() → standby</div>
+        <div class="console-line blue">&gt; audio.listen() → active</div>
+        <div class="console-line green">&gt; gps.track() → broadcasting</div>
+        <div class="console-line green">&gt; safety_score() → 78/100</div>
+        <div class="console-line muted">&gt; all modules online ✓</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROUTE MAP -->
+  <div class="map-section">
+    <div class="panel">
+      <div class="panel-hdr">
+        <div class="panel-title"><span class="dot-blink"></span> Live Route Safety Map</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span class="tag green">LIVE GPS</span>
+          <button class="btn-ctrl" onclick="getLocation()" style="font-size:11px;padding:5px 12px">📍 Locate Me</button>
+          <button class="btn-ctrl" onclick="calcRouteSafetyScore()" style="font-size:11px;padding:5px 12px">Analyse Route</button>
+        </div>
+      </div>
+      <div id="routeMap">
+        <canvas id="mapCanvas"></canvas>
+      </div>
+      <div class="route-info">
+        <div class="rm">
+          <div class="rm-val" id="routeScore" style="color:var(--safe)">—</div>
+          <div class="rm-lbl">Safety Score</div>
+        </div>
+        <div class="rm">
+          <div class="rm-val" id="routeZoneBot" style="font-size:14px">—</div>
+          <div class="rm-lbl">Current Zone</div>
+        </div>
+        <div class="rm">
+          <div class="rm-val" id="routeCoordsBot" style="font-size:12px;color:var(--blue)">—</div>
+          <div class="rm-lbl">GPS Coordinates</div>
+        </div>
+        <div class="rm">
+          <div class="rm-val" id="routeTime" style="font-size:14px">—</div>
+          <div class="rm-lbl">Last Updated</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACTIVITY FEED -->
+  <div class="feed-section">
+    <div class="panel">
+      <div class="panel-hdr">
+        <div class="panel-title"><span class="dot-blink"></span> Live Activity Feed</div>
+        <button class="btn-ctrl" onclick="clearFeed()" style="font-size:11px;padding:5px 12px">Clear</button>
+      </div>
+      <div class="feed-list" id="feedList">
+        <div class="feed-item">
+          <div class="feed-dot" style="background:var(--safe)"></div>
+          <div class="feed-content">
+            <div class="feed-msg">🛡 Guardian AI v2.0 initialised</div>
+            <div class="feed-sub">AIML domain — XGBoost + Random Forest + MediaPipe</div>
+          </div>
+          <div class="feed-time">now</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /wrap -->
+
+<!-- SOS OVERLAY -->
+<div id="sosOverlay">
+  <div class="sos-icon">🆘</div>
+  <div class="sos-title">SOS ACTIVATED</div>
+  <div class="sos-timer" id="sosTimer">00:00</div>
+  <div class="sos-msg">Broadcasting live GPS to family & nearest police station</div>
+  <div class="sos-gps" id="sosCoords">Acquiring GPS coordinates…</div>
+  <div class="sos-contacts" id="sosContacts">
+    <div class="contact-pill" id="cp1">👩 Mom — Sending…</div>
+    <div class="contact-pill" id="cp2">👮 Police #7 — Sending…</div>
+    <div class="contact-pill" id="cp3">👩‍👧 Sister — Sending…</div>
+  </div>
+  <button class="btn-cancel-sos" onclick="cancelSOS()">✕ Cancel SOS — I am Safe</button>
+</div>
+
+<!-- STEALTH OVERLAY -->
+<div id="stealthOverlay" onclick="exitStealth()">
+  <div class="stealth-icon">🔋</div>
+  <div class="stealth-txt">LOW BATTERY — 2%</div>
+  <div style="color:rgba(255,255,255,0.15);font-size:11px;margin-top:20px;letter-spacing:2px">TAP 3× TO EXIT STEALTH</div>
+</div>
+
+<!-- CHECK-IN BANNER -->
+<div class="checkin-banner" id="checkinBanner" onclick="confirmCheckIn()">
+  <div class="checkin-title" id="checkinTitle">⚠ Are you okay?</div>
+  <div class="checkin-sub">Tap to confirm you're safe — auto-SOS in <span id="checkinCountdown">10</span>s</div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

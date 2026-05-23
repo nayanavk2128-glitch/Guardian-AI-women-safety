@@ -1,0 +1,1807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guardian AI — Settings</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #03050d;
+  --surface: #080d1a;
+  --card: #0c1220;
+  --card2: #0f1628;
+  --border: rgba(100,160,255,0.08);
+  --border2: rgba(100,160,255,0.15);
+  --accent: #ff2d6b;
+  --accent2: #ff6b35;
+  --blue: #1a8cff;
+  --safe: #00e5a0;
+  --warn: #ffcc00;
+  --danger: #ff2d6b;
+  --purple: #a855f7;
+  --text: #e8f0ff;
+  --muted: #4a6080;
+  --glow-r: rgba(255,45,107,0.3);
+  --glow-b: rgba(26,140,255,0.3);
+  --glow-g: rgba(0,229,160,0.3);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  background:var(--bg);color:var(--text);
+  font-family:'Space Grotesk',sans-serif;
+  min-height:100vh;overflow-x:hidden;
+}
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(ellipse 70% 50% at 85% 5%,rgba(255,45,107,0.06) 0%,transparent 65%),
+    radial-gradient(ellipse 50% 60% at 5% 90%,rgba(26,140,255,0.07) 0%,transparent 65%),
+    radial-gradient(ellipse 40% 40% at 50% 50%,rgba(168,85,247,0.03) 0%,transparent 60%);
+}
+.grid-bg{
+  position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:
+    linear-gradient(rgba(100,160,255,0.03) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(100,160,255,0.03) 1px,transparent 1px);
+  background-size:48px 48px;
+}
+.scanline{
+  position:fixed;top:0;left:0;width:100%;height:100%;
+  pointer-events:none;z-index:9999;
+  background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(26,140,255,0.008) 3px,rgba(26,140,255,0.008) 4px);
+}
+
+/* ── NAVBAR ── */
+nav{
+  position:sticky;top:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 32px;
+  background:rgba(3,5,13,0.92);
+  backdrop-filter:blur(24px);
+  border-bottom:1px solid var(--border2);
+  box-shadow:0 1px 0 rgba(255,45,107,0.1);
+}
+.nav-logo{display:flex;align-items:center;gap:12px}
+.shield-icon{
+  width:40px;height:40px;border-radius:12px;
+  background:linear-gradient(135deg,var(--accent),#8b0033);
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;
+  box-shadow:0 0 24px var(--glow-r);
+  animation:shield-pulse 2.5s ease-in-out infinite;
+}
+@keyframes shield-pulse{0%,100%{box-shadow:0 0 24px var(--glow-r)}50%{box-shadow:0 0 40px rgba(255,45,107,0.6)}}
+.nav-brand{font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;letter-spacing:1px}
+.nav-brand em{font-style:normal;color:var(--accent)}
+.nav-sub{font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-top:1px}
+.nav-links{display:flex;gap:4px}
+.nav-link{
+  padding:7px 16px;border-radius:8px;font-size:13px;font-weight:500;
+  color:var(--muted);text-decoration:none;transition:all 0.2s;
+  border:1px solid transparent;
+}
+.nav-link:hover{color:var(--text);background:rgba(255,255,255,0.04);border-color:var(--border)}
+.nav-link.active{color:var(--blue);background:rgba(26,140,255,0.08);border-color:rgba(26,140,255,0.2)}
+.nav-right{display:flex;gap:10px;align-items:center}
+.sys-badge{
+  display:flex;align-items:center;gap:6px;
+  padding:5px 14px;border-radius:20px;
+  font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;
+  background:rgba(0,229,160,0.1);border:1px solid rgba(0,229,160,0.25);color:var(--safe);
+}
+.pulse-dot{width:7px;height:7px;border-radius:50%;background:currentColor;animation:dotPulse 1.5s ease-in-out infinite}
+@keyframes dotPulse{0%,100%{opacity:1}50%{opacity:0.3}}
+.nav-clock{font-family:'JetBrains Mono',monospace;font-size:14px;color:var(--blue)}
+.btn-nav{
+  padding:7px 18px;border-radius:8px;border:none;cursor:pointer;
+  font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:600;
+  transition:all 0.2s;
+}
+.btn-sos-nav{
+  background:linear-gradient(135deg,var(--accent),#8b0033);
+  color:#fff;box-shadow:0 0 20px rgba(255,45,107,0.35);
+}
+.btn-sos-nav:hover{transform:scale(1.04);box-shadow:0 0 35px rgba(255,45,107,0.6)}
+
+/* ── LAYOUT ── */
+.wrap{max-width:1440px;margin:0 auto;padding:24px 32px;position:relative;z-index:1}
+
+/* ── PAGE HEADER ── */
+.page-header{
+  display:flex;align-items:flex-start;justify-content:space-between;
+  margin-bottom:28px;
+}
+.page-title{
+  font-family:'Rajdhani',sans-serif;font-size:32px;font-weight:700;letter-spacing:1px;
+  display:flex;align-items:center;gap:12px;
+}
+.page-title-icon{
+  width:44px;height:44px;border-radius:12px;
+  background:linear-gradient(135deg,rgba(168,85,247,0.2),rgba(168,85,247,0.05));
+  border:1px solid rgba(168,85,247,0.25);
+  display:flex;align-items:center;justify-content:center;font-size:20px;
+}
+.page-sub{font-size:13px;color:var(--muted);margin-top:4px}
+.page-actions{display:flex;gap:10px;align-items:center}
+.btn{
+  padding:8px 20px;border-radius:8px;border:1px solid var(--border2);
+  font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:600;
+  cursor:pointer;transition:all 0.2s;color:var(--text);background:transparent;
+}
+.btn:hover{background:rgba(255,255,255,0.04);border-color:rgba(100,160,255,0.3)}
+.btn-primary{
+  background:linear-gradient(135deg,rgba(26,140,255,0.2),rgba(26,140,255,0.05));
+  border-color:rgba(26,140,255,0.4);color:var(--blue);
+}
+.btn-primary:hover{background:rgba(26,140,255,0.2)}
+.btn-danger{
+  background:linear-gradient(135deg,rgba(255,45,107,0.15),rgba(255,45,107,0.03));
+  border-color:rgba(255,45,107,0.35);color:var(--danger);
+}
+.btn-danger:hover{background:rgba(255,45,107,0.2)}
+.btn-purple{
+  background:linear-gradient(135deg,rgba(168,85,247,0.2),rgba(168,85,247,0.05));
+  border-color:rgba(168,85,247,0.4);color:var(--purple);
+}
+.btn-purple:hover{background:rgba(168,85,247,0.2)}
+.btn-safe{
+  background:linear-gradient(135deg,rgba(0,229,160,0.15),rgba(0,229,160,0.03));
+  border-color:rgba(0,229,160,0.35);color:var(--safe);
+}
+.btn-safe:hover{background:rgba(0,229,160,0.2)}
+
+/* ── SETTINGS LAYOUT ── */
+.settings-grid{display:grid;grid-template-columns:240px 1fr;gap:20px;align-items:start}
+
+/* ── SIDEBAR NAV ── */
+.settings-sidebar{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:16px;overflow:hidden;position:sticky;top:84px;
+}
+.sidebar-section-label{
+  font-size:9px;text-transform:uppercase;letter-spacing:2px;
+  color:var(--muted);padding:14px 16px 6px;
+}
+.sidebar-item{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 16px;cursor:pointer;transition:all 0.2s;
+  font-size:13px;font-weight:500;color:var(--muted);
+  border-left:2px solid transparent;
+}
+.sidebar-item:hover{color:var(--text);background:rgba(255,255,255,0.03)}
+.sidebar-item.active{
+  color:var(--blue);background:rgba(26,140,255,0.07);
+  border-left-color:var(--blue);
+}
+.sidebar-item .s-icon{font-size:16px;width:20px;text-align:center}
+.sidebar-divider{height:1px;background:var(--border);margin:6px 0}
+.sidebar-version{
+  padding:12px 16px;font-size:10px;color:var(--muted);
+  font-family:'JetBrains Mono',monospace;border-top:1px solid var(--border);
+}
+
+/* ── SETTINGS CONTENT ── */
+.settings-content{display:flex;flex-direction:column;gap:18px}
+
+/* ── PANEL ── */
+.panel{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden}
+.panel-hdr{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 18px;border-bottom:1px solid var(--border);
+}
+.panel-title{
+  font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:600;
+  letter-spacing:0.5px;display:flex;align-items:center;gap:8px;
+}
+.panel-title .p-icon{font-size:17px}
+.dot-blink{width:7px;height:7px;border-radius:50%;background:var(--accent);animation:blink 1.5s infinite}
+.dot-blink.blue{background:var(--blue)}
+.dot-blink.green{background:var(--safe)}
+.dot-blink.purple{background:var(--purple)}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+.tag{
+  padding:3px 10px;border-radius:12px;font-size:10px;font-weight:600;
+  letter-spacing:1px;text-transform:uppercase;
+  background:rgba(100,160,255,0.08);border:1px solid rgba(100,160,255,0.15);color:var(--muted);
+}
+.tag.green{background:rgba(0,229,160,0.1);border-color:rgba(0,229,160,0.25);color:var(--safe)}
+.tag.red{background:rgba(255,45,107,0.1);border-color:rgba(255,45,107,0.25);color:var(--danger)}
+.tag.purple{background:rgba(168,85,247,0.1);border-color:rgba(168,85,247,0.25);color:var(--purple)}
+
+/* ── SETTING ROW ── */
+.setting-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 18px;border-bottom:1px solid var(--border);
+  transition:background 0.15s;
+}
+.setting-row:last-child{border-bottom:none}
+.setting-row:hover{background:rgba(255,255,255,0.015)}
+.setting-info{flex:1;min-width:0}
+.setting-label{font-size:14px;font-weight:500;color:var(--text);margin-bottom:3px}
+.setting-desc{font-size:12px;color:var(--muted);line-height:1.4}
+.setting-control{flex-shrink:0;margin-left:20px}
+
+/* ── TOGGLE ── */
+.toggle-wrap{display:flex;align-items:center;gap:10px}
+.toggle{
+  position:relative;width:44px;height:24px;cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+}
+.toggle input{opacity:0;width:0;height:0;position:absolute}
+.toggle-slider{
+  position:absolute;inset:0;border-radius:12px;
+  background:rgba(255,255,255,0.08);border:1px solid var(--border2);
+  transition:all 0.3s;
+}
+.toggle-slider::before{
+  content:'';position:absolute;left:3px;top:50%;transform:translateY(-50%);
+  width:16px;height:16px;border-radius:50%;background:var(--muted);
+  transition:all 0.3s;
+}
+.toggle input:checked + .toggle-slider{
+  background:rgba(26,140,255,0.25);border-color:rgba(26,140,255,0.5);
+}
+.toggle input:checked + .toggle-slider::before{
+  left:calc(100% - 19px);background:var(--blue);
+  box-shadow:0 0 8px rgba(26,140,255,0.6);
+}
+.toggle.green input:checked + .toggle-slider{
+  background:rgba(0,229,160,0.2);border-color:rgba(0,229,160,0.45);
+}
+.toggle.green input:checked + .toggle-slider::before{
+  background:var(--safe);box-shadow:0 0 8px rgba(0,229,160,0.6);
+}
+.toggle.red input:checked + .toggle-slider{
+  background:rgba(255,45,107,0.2);border-color:rgba(255,45,107,0.45);
+}
+.toggle.red input:checked + .toggle-slider::before{
+  background:var(--danger);box-shadow:0 0 8px rgba(255,45,107,0.6);
+}
+.toggle-state{font-size:11px;font-weight:600;color:var(--muted);min-width:28px}
+.toggle-state.on{color:var(--blue)}
+.toggle-state.on-g{color:var(--safe)}
+.toggle-state.on-r{color:var(--danger)}
+
+/* ── INPUT FIELDS ── */
+.s-input{
+  background:rgba(255,255,255,0.04);border:1px solid var(--border2);
+  border-radius:8px;padding:8px 12px;
+  font-family:'Space Grotesk',sans-serif;font-size:13px;color:var(--text);
+  outline:none;transition:border-color 0.2s;min-width:200px;
+}
+.s-input:focus{border-color:rgba(26,140,255,0.5);background:rgba(26,140,255,0.04)}
+.s-input::placeholder{color:var(--muted)}
+.s-input.mono{font-family:'JetBrains Mono',monospace;font-size:12px}
+
+.s-select{
+  background:rgba(255,255,255,0.04);border:1px solid var(--border2);
+  border-radius:8px;padding:8px 12px;
+  font-family:'Space Grotesk',sans-serif;font-size:13px;color:var(--text);
+  outline:none;transition:border-color 0.2s;cursor:pointer;min-width:160px;
+  -webkit-appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%234a6080' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 10px center;
+  padding-right:30px;
+}
+.s-select:focus{border-color:rgba(26,140,255,0.5)}
+.s-select option{background:#0c1220;color:var(--text)}
+
+/* ── RANGE SLIDER ── */
+.range-wrap{display:flex;align-items:center;gap:12px}
+.s-range{
+  -webkit-appearance:none;appearance:none;
+  width:160px;height:4px;border-radius:2px;
+  background:rgba(255,255,255,0.08);outline:none;cursor:pointer;
+}
+.s-range::-webkit-slider-thumb{
+  -webkit-appearance:none;width:16px;height:16px;border-radius:50%;
+  background:var(--blue);cursor:pointer;
+  box-shadow:0 0 8px rgba(26,140,255,0.5);
+}
+.s-range::-moz-range-thumb{
+  width:16px;height:16px;border-radius:50%;border:none;
+  background:var(--blue);cursor:pointer;
+}
+.range-val{
+  font-family:'JetBrains Mono',monospace;font-size:12px;
+  color:var(--blue);min-width:36px;text-align:right;
+}
+
+/* ── PROFILE CARD ── */
+.profile-card{
+  display:flex;align-items:center;gap:18px;
+  padding:20px 18px;border-bottom:1px solid var(--border);
+}
+.profile-avatar{
+  width:68px;height:68px;border-radius:50%;
+  background:linear-gradient(135deg,rgba(168,85,247,0.4),rgba(26,140,255,0.3));
+  border:2px solid rgba(168,85,247,0.3);
+  display:flex;align-items:center;justify-content:center;
+  font-size:28px;flex-shrink:0;position:relative;cursor:pointer;
+}
+.avatar-edit{
+  position:absolute;bottom:0;right:0;
+  width:22px;height:22px;border-radius:50%;
+  background:var(--blue);display:flex;align-items:center;justify-content:center;
+  font-size:11px;border:2px solid var(--card);
+}
+.profile-info{flex:1}
+.profile-name{font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700}
+.profile-role{font-size:12px;color:var(--muted);margin-top:2px}
+.profile-badges{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.p-badge{
+  padding:2px 10px;border-radius:12px;font-size:10px;font-weight:600;
+  letter-spacing:0.5px;
+}
+.pb-safe{background:rgba(0,229,160,0.12);color:var(--safe);border:1px solid rgba(0,229,160,0.2)}
+.pb-blue{background:rgba(26,140,255,0.12);color:var(--blue);border:1px solid rgba(26,140,255,0.2)}
+.pb-purple{background:rgba(168,85,247,0.12);color:var(--purple);border:1px solid rgba(168,85,247,0.2)}
+
+/* ── KEYWORD TAGS ── */
+.keyword-wrap{display:flex;flex-wrap:wrap;gap:7px;padding:14px 18px 4px}
+.kw-tag{
+  display:flex;align-items:center;gap:5px;
+  padding:4px 12px;border-radius:20px;font-size:12px;
+  background:rgba(255,255,255,0.05);border:1px solid var(--border2);
+  color:var(--text);cursor:default;
+}
+.kw-remove{
+  cursor:pointer;color:var(--muted);font-size:14px;line-height:1;
+  transition:color 0.2s;margin-left:2px;
+}
+.kw-remove:hover{color:var(--danger)}
+.kw-add-wrap{display:flex;gap:8px;padding:10px 18px 16px}
+.kw-add-input{
+  flex:1;background:rgba(255,255,255,0.04);border:1px solid var(--border2);
+  border-radius:8px;padding:7px 12px;
+  font-family:'Space Grotesk',sans-serif;font-size:13px;color:var(--text);
+  outline:none;transition:border-color 0.2s;
+}
+.kw-add-input:focus{border-color:rgba(26,140,255,0.5)}
+.kw-add-input::placeholder{color:var(--muted)}
+.kw-add-btn{
+  padding:7px 16px;border-radius:8px;border:1px solid rgba(26,140,255,0.3);
+  background:rgba(26,140,255,0.1);color:var(--blue);
+  font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:600;
+  cursor:pointer;transition:all 0.2s;
+}
+.kw-add-btn:hover{background:rgba(26,140,255,0.2)}
+
+/* ── ZONE TABLE ── */
+.zone-table{width:100%;border-collapse:collapse}
+.zone-table th{
+  text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:1.5px;
+  color:var(--muted);padding:10px 18px;border-bottom:1px solid var(--border);
+  font-weight:600;
+}
+.zone-table td{padding:12px 18px;border-bottom:1px solid rgba(100,160,255,0.04);font-size:13px}
+.zone-table tr:last-child td{border-bottom:none}
+.zone-table tr:hover td{background:rgba(255,255,255,0.015)}
+.zone-dot{
+  display:inline-block;width:9px;height:9px;border-radius:50%;
+  margin-right:7px;vertical-align:middle;
+}
+.z-safe-dot{background:var(--safe);box-shadow:0 0 6px var(--glow-g)}
+.z-warn-dot{background:var(--warn)}
+.z-danger-dot{background:var(--danger);box-shadow:0 0 6px var(--glow-r)}
+.zone-score{
+  font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;
+}
+.zone-actions{display:flex;gap:6px}
+.z-btn{
+  padding:4px 11px;border-radius:6px;font-size:11px;font-weight:600;
+  cursor:pointer;transition:all 0.2s;border:1px solid var(--border2);
+  background:transparent;color:var(--muted);font-family:'Space Grotesk',sans-serif;
+}
+.z-btn:hover{color:var(--text);border-color:rgba(100,160,255,0.3)}
+.z-btn.danger{border-color:rgba(255,45,107,0.25);color:var(--danger)}
+.z-btn.danger:hover{background:rgba(255,45,107,0.1)}
+.add-zone-row{padding:12px 18px;border-top:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap}
+
+/* ── AI MODEL CARDS ── */
+.model-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:16px 18px}
+.model-card{
+  border:1px solid var(--border);border-radius:12px;padding:14px;
+  background:var(--card2);transition:border-color 0.2s,transform 0.2s;cursor:pointer;
+  position:relative;
+}
+.model-card:hover{border-color:var(--border2);transform:translateY(-1px)}
+.model-card.selected{border-color:rgba(26,140,255,0.45);background:rgba(26,140,255,0.04)}
+.model-card.selected::after{
+  content:'✓';position:absolute;top:10px;right:12px;
+  font-size:12px;color:var(--blue);font-weight:700;
+}
+.mc-icon{font-size:22px;margin-bottom:8px}
+.mc-name{font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;margin-bottom:3px}
+.mc-desc{font-size:11px;color:var(--muted);line-height:1.4}
+.mc-badge{
+  display:inline-block;margin-top:8px;padding:2px 9px;border-radius:10px;
+  font-size:10px;font-weight:600;
+  background:rgba(0,229,160,0.1);color:var(--safe);border:1px solid rgba(0,229,160,0.2);
+}
+.mc-badge.warn{background:rgba(255,204,0,0.1);color:var(--warn);border-color:rgba(255,204,0,0.2)}
+.mc-badge.blue{background:rgba(26,140,255,0.1);color:var(--blue);border-color:rgba(26,140,255,0.2)}
+
+/* ── CONFIDENCE METER ── */
+.conf-row{display:flex;align-items:center;gap:10px;padding:10px 18px;border-bottom:1px solid var(--border)}
+.conf-row:last-child{border-bottom:none}
+.conf-name{font-size:13px;color:var(--text);min-width:160px}
+.conf-track{flex:1;height:6px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden}
+.conf-fill{height:100%;border-radius:3px;transition:width 0.5s}
+.conf-pct{font-family:'JetBrains Mono',monospace;font-size:12px;min-width:38px;text-align:right}
+
+/* ── DANGER ZONE ── */
+.danger-zone-card{
+  border:1px solid rgba(255,45,107,0.2);border-radius:12px;
+  background:rgba(255,45,107,0.04);padding:16px;margin:16px 18px;
+  display:flex;align-items:flex-start;gap:14px;
+}
+.dz-icon{font-size:22px;flex-shrink:0;margin-top:2px}
+.dz-label{font-size:14px;font-weight:600;color:var(--danger);margin-bottom:4px}
+.dz-desc{font-size:12px;color:var(--muted);line-height:1.4;margin-bottom:10px}
+
+/* ── SYSTEM STATUS GRID ── */
+.sys-status-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border)}
+.ss-item{background:var(--card);padding:14px 16px}
+.ss-label{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:6px}
+.ss-val{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:500}
+.ss-val.ok{color:var(--safe)}.ss-val.warn{color:var(--warn)}.ss-val.err{color:var(--danger)}
+.ss-val.blue{color:var(--blue)}
+
+/* ── NOTIFICATION SCHEDULE ── */
+.schedule-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;padding:14px 18px}
+.sch-day{
+  text-align:center;border:1px solid var(--border);border-radius:10px;
+  padding:10px 4px;cursor:pointer;transition:all 0.2s;
+}
+.sch-day:hover{border-color:var(--border2);background:rgba(255,255,255,0.02)}
+.sch-day.active{border-color:rgba(26,140,255,0.4);background:rgba(26,140,255,0.07)}
+.sch-day-name{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:5px}
+.sch-day.active .sch-day-name{color:var(--blue)}
+.sch-day-dot{width:8px;height:8px;border-radius:50%;background:var(--border2);margin:0 auto}
+.sch-day.active .sch-day-dot{background:var(--blue);box-shadow:0 0 6px rgba(26,140,255,0.5)}
+
+/* ── TOAST ── */
+.toast{
+  position:fixed;bottom:28px;right:28px;z-index:9999;
+  padding:12px 20px;border-radius:10px;font-size:13px;font-weight:500;
+  background:var(--card2);border:1px solid var(--border2);
+  transform:translateY(20px);opacity:0;pointer-events:none;
+  transition:all 0.3s;box-shadow:0 8px 32px rgba(0,0,0,0.4);
+}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.safe{border-color:rgba(0,229,160,0.35);color:var(--safe)}
+.toast.info{border-color:rgba(26,140,255,0.35);color:var(--blue)}
+.toast.danger{border-color:rgba(255,45,107,0.35);color:var(--danger)}
+.toast.warn{border-color:rgba(255,204,0,0.35);color:var(--warn)}
+
+/* ── SAVE BAR ── */
+.save-bar{
+  position:fixed;bottom:0;left:0;right:0;z-index:200;
+  background:rgba(8,13,26,0.96);backdrop-filter:blur(16px);
+  border-top:1px solid var(--border2);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 32px;
+  transform:translateY(100%);transition:transform 0.3s;
+}
+.save-bar.visible{transform:translateY(0)}
+.save-bar-msg{font-size:13px;color:var(--muted)}
+.save-bar-msg span{color:var(--warn)}
+.save-actions{display:flex;gap:10px}
+
+@media(max-width:900px){
+  .settings-grid{grid-template-columns:1fr}
+  .settings-sidebar{position:static}
+  .model-grid{grid-template-columns:1fr 1fr}
+  .sys-status-grid{grid-template-columns:repeat(2,1fr)}
+}
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="scanline"></div>
+
+<!-- NAVBAR -->
+<nav>
+  <div class="nav-logo">
+    <div class="shield-icon">🛡</div>
+    <div>
+      <div class="nav-brand">GUARDIAN <em>AI</em></div>
+      <div class="nav-sub">Women &amp; Children Safety Intelligence</div>
+    </div>
+  </div>
+  <div class="nav-links">
+    <a href="index.html" class="nav-link">Dashboard</a>
+    <a href="contacts.html" class="nav-link">Contacts</a>
+    <a href="route_safety.html" class="nav-link">Route Safety</a>
+    <a href="reports.html" class="nav-link">Reports</a>
+    <a href="guardian_ai_safety_dashboard.html" class="nav-link">Analytics</a>
+    <a href="settings.html" class="nav-link active">Settings</a>
+  </div>
+  <div class="nav-right">
+    <div class="sys-badge">
+      <div class="pulse-dot"></div>
+      SYSTEM ONLINE
+    </div>
+    <div class="nav-clock" id="navClock">--:--:--</div>
+    <button class="btn-nav btn-sos-nav" onclick="triggerSOS()">🆘 SOS</button>
+  </div>
+</nav>
+
+<div class="wrap">
+
+  <!-- PAGE HEADER -->
+  <div class="page-header">
+    <div>
+      <div class="page-title">
+        <div class="page-title-icon">⚙️</div>
+        System Settings
+      </div>
+      <div class="page-sub">Configure Guardian AI modules, privacy, alerts & AI behaviour</div>
+    </div>
+    <div class="page-actions">
+      <button class="btn" onclick="resetDefaults()">↺ Reset Defaults</button>
+      <button class="btn btn-primary" onclick="saveAllSettings()">💾 Save All Changes</button>
+    </div>
+  </div>
+
+  <div class="settings-grid">
+
+    <!-- SIDEBAR -->
+    <div class="settings-sidebar">
+      <div class="sidebar-section-label">General</div>
+      <div class="sidebar-item active" onclick="showSection('profile',this)">
+        <span class="s-icon">👤</span> Profile
+      </div>
+      <div class="sidebar-item" onclick="showSection('notifications',this)">
+        <span class="s-icon">🔔</span> Notifications
+      </div>
+      <div class="sidebar-item" onclick="showSection('privacy',this)">
+        <span class="s-icon">🔒</span> Privacy &amp; Security
+      </div>
+      <div class="sidebar-divider"></div>
+      <div class="sidebar-section-label">AI Modules</div>
+      <div class="sidebar-item" onclick="showSection('ai',this)">
+        <span class="s-icon">🤖</span> AI &amp; Detection
+      </div>
+      <div class="sidebar-item" onclick="showSection('keywords',this)">
+        <span class="s-icon">🎙</span> Voice Keywords
+      </div>
+      <div class="sidebar-item" onclick="showSection('zones',this)">
+        <span class="s-icon">🗺</span> Safety Zones
+      </div>
+      <div class="sidebar-divider"></div>
+      <div class="sidebar-section-label">System</div>
+      <div class="sidebar-item" onclick="showSection('appearance',this)">
+        <span class="s-icon">🎨</span> Appearance
+      </div>
+      <div class="sidebar-item" onclick="showSection('system',this)">
+        <span class="s-icon">🖥</span> System Status
+      </div>
+      <div class="sidebar-item" onclick="showSection('danger',this)">
+        <span class="s-icon" style="color:var(--danger)">⚠</span>
+        <span style="color:var(--danger)">Danger Zone</span>
+      </div>
+      <div class="sidebar-version">v2.0.1 — AIML Build</div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="settings-content">
+
+      <!-- ══ PROFILE ══ -->
+      <div id="sec-profile">
+        <div class="panel">
+          <div class="panel-hdr">
+            <div class="panel-title"><span class="p-icon">👤</span> User Profile</div>
+            <span class="tag green">ACTIVE</span>
+          </div>
+          <div class="profile-card">
+            <div class="profile-avatar" onclick="changeAvatar()">
+              👩
+              <div class="avatar-edit">✏️</div>
+            </div>
+            <div class="profile-info">
+              <div class="profile-name" id="displayName">Priya Sharma</div>
+              <div class="profile-role">Guardian AI User · Mumbai, India</div>
+              <div class="profile-badges">
+                <span class="p-badge pb-safe">✓ Verified</span>
+                <span class="p-badge pb-blue">GPS Enabled</span>
+                <span class="p-badge pb-purple">AI Pro</span>
+              </div>
+            </div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">Full Name</div>
+              <div class="setting-desc">Displayed on SOS alerts and contact notifications</div>
+            </div>
+            <div class="setting-control">
+              <input class="s-input" type="text" id="inputName" value="Priya Sharma" oninput="markDirty()">
+            </div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">Phone Number</div>
+              <div class="setting-desc">Used for SMS SOS fallback</div>
+            </div>
+            <div class="setting-control">
+              <input class="s-input" type="tel" id="inputPhone" value="+91 98765 43210" oninput="markDirty()">
+            </div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">Home Address</div>
+              <div class="setting-desc">Safe zone anchor point for route analysis</div>
+            </div>
+            <div class="setting-control">
+              <input class="s-input" type="text" id="inputAddress" value="Bandra West, Mumbai" oninput="markDirty()">
+            </div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">Blood Group</div>
+              <div class="setting-desc">Shared with emergency services on SOS</div>
+            </div>
+            <div class="setting-control">
+              <select class="s-select" onchange="markDirty()">
+                <option>A+</option><option>A−</option>
+                <option>B+</option><option>B−</option>
+                <option selected>O+</option><option>O−</option>
+                <option>AB+</option><option>AB−</option>
+              </select>
+            </div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">Medical Conditions</div>
+              <div class="setting-desc">Optional — included in emergency info card</div>
+            </div>
+            <div class="setting-control">
+              <input class="s-input" type="text" placeholder="e.g. Diabetic, Asthma…" oninput="markDirty()">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ NOTIFICATIONS ══ -->
+      <div id="sec-notifications" style="display:none">
+        <div class="panel">
+          <div class="panel-hdr">
+            <div class="panel-title"><span class="p-icon">🔔</span> Alert Notifications</div>
+            <span class="tag green">ACTIVE</span>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">SOS Alert Notifications</div>
+              <div class="setting-desc">Push notification when SOS is triggered</div>
+            </div>
+            <div class="setting-control">
+              <div class="toggle-wrap">
+                <label class="toggle red">
+                  <input type="checkbox" checked onchange="toggleState(this,'on-r')">
+                  <span class="toggle-slider"></span>
+                </label>
+                <span class="toggle-state on-r" id="ts-sos">ON</span>
+              </div>
+            </div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">High Threat Zone Alert</div>
+              <div class="setting-desc">Notify when entering a flagged danger zone</div>
+            </div>
+            <div class="setting-control">
+              <div class="toggle-wrap">
+                <label class="toggle red">
+                  <input type="checkbox" checked onchange="toggleState(this,'on-r')">
+                  <span class="toggle-slider"></span>
+                </label>
+                <span class="toggle-state on-r">ON</span>
+              </div>
+            </div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">Check-In Reminder</div>
+              <div class="setting-desc">Periodic "Are you safe?" prompts while travelling</div>
+            </div>
+            <div class="setting-control">
+              <div class="toggle-wrap">
+                <label class="toggle green">
+                  <input type="checkbox" checked onchange="toggleState(this,'on-g')">
+                  <span class="toggle-slider"></span>
+                </label>
+                <span class="toggle-state on-g">ON</span>
+              </div>
+            </div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">Check-In Interval</div>
+              <div class="setting-desc">How often to send safety check-in prompts</div>
+            </div>
+            <div class="setting-control">
+              <select class="s-select" onchange="markDirty()">
+                <option>Every 10 minutes</option>
+                <option selected>Every 15 minutes</option>
+                <option>Every 30 minutes</option>
+                <option>Every 1 hour</option>
+              </select>
+            </div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">AI Detection Alerts</div>
+              <div class="setting-desc">Notify when face / gesture / voice threat is detected</div>
+            </div>
+            <div class="setting-control">
+              <div class="toggle-wrap">
+                <label class="toggle">
+                  <input type="checkbox" checked onchange="toggleState(this,'on')">
+                  <span class="toggle-slider"></span>
+                </label>
+                <span class="toggle-state on">ON</span>
+              </div>
+            </div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">SMS Fallback Alerts</div>
+              <div class="setting-desc">Send SMS if push notification cannot be delivered</div>
+            </div>
+            <div class="setting-control">
+              <div class="toggle-wrap">
+                <label class="toggle green">
+                  <input type="checkbox" onchange="toggleState(this,'on-g')">
+                  <span class="toggle-slider"></span>
+                </label>
+                <span class="toggle-state">OFF</span>
+              </div>
+            </div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">Sound Alerts</div>
+              <div class="setting-desc">Play audio alert tone on high-severity events</div>
+            </div>
+            <div class="setting-control">
+              <div class="toggle-wrap">
+                <label class="toggle green">
+                  <input type="checkbox" checked onchange="toggleState(this,'on-g')">
+                  <span class="toggle-slider"></span>
+                </label>
+                <span class="toggle-state on-g">ON</span>
+              </div>
+            </div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">Alert Volume</div>
+              <div class="setting-desc">Volume level for audio notifications</div>
+            </div>
+            <div class="setting-control">
+              <div class="range-wrap">
+                <input class="s-range" type="range" min="0" max="100" value="80"
+                  oninput="document.getElementById('vol-val').textContent=this.value+'%';markDirty()">
+                <span class="range-val" id="vol-val">80%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-hdr">
+            <div class="panel-title"><span class="p-icon">📅</span> Quiet Hours Schedule</div>
+            <span class="tag">WEEKLY</span>
+          </div>
+          <div style="padding:14px 18px;border-bottom:1px solid var(--border)">
+            <div class="setting-row" style="padding:0;border:none">
+              <div class="setting-info">
+                <div class="setting-label">Enable Quiet Hours</div>
+                <div class="setting-desc">Suppress non-critical alerts during set times</div>
+              </div>
+              <div class="setting-control">
+                <div class="toggle-wrap">
+                  <label class="toggle">
+                    <input type="checkbox" onchange="toggleState(this,'on')">
+                    <span class="toggle-slider"></span>
+                  </label>
+                  <span class="toggle-state">OFF</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;gap:14px;padding:14px 18px;border-bottom:1px solid var(--border)">
+            <div>
+              <div style="font-size:11px;color:var(--muted);margin-bottom:5px;letter-spacing:1px;text-transform:uppercase">From</div>
+              <input class="s-input" type="time" value="22:00" style="min-width:120px" oninput="markDirty()">
+            </div>
+            <div>
+              <div style="font-size:11px;color:var(--muted);margin-bottom:5px;letter-spacing:1px;text-transform:uppercase">To</div>
+              <input class="s-input" type="time" value="07:00" style="min-width:120px" oninput="markDirty()">
+            </div>
+          </div>
+          <div class="schedule-grid">
+            <div class="sch-day active" onclick="toggleDay(this)">
+              <div class="sch-day-name">Mon</div>
+              <div class="sch-day-dot"></div>
+            </div>
+            <div class="sch-day active" onclick="toggleDay(this)">
+              <div class="sch-day-name">Tue</div>
+              <div class="sch-day-dot"></div>
+            </div>
+            <div class="sch-day active" onclick="toggleDay(this)">
+              <div class="sch-day-name">Wed</div>
+              <div class="sch-day-dot"></div>
+            </div>
+            <div class="sch-day active" onclick="toggleDay(this)">
+              <div class="sch-day-name">Thu</div>
+              <div class="sch-day-dot"></div>
+            </div>
+            <div class="sch-day active" onclick="toggleDay(this)">
+              <div class="sch-day-name">Fri</div>
+              <div class="sch-day-dot"></div>
+            </div>
+            <div class="sch-day" onclick="toggleDay(this)">
+              <div class="sch-day-name">Sat</div>
+              <div class="sch-day-dot"></div>
+            </div>
+            <div class="sch-day" onclick="toggleDay(this)">
+              <div class="sch-day-name">Sun</div>
+              <div class="sch-day-dot"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ PRIVACY & SECURITY ══ -->
+      <div id="sec-privacy" style="display:none">
+        <div class="panel">
+          <div class="panel-hdr">
+            <div class="panel-title"><span class="p-icon">🔒</span> Privacy &amp; Security</div>
+            <span class="tag green">SECURE</span>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">Stealth Mode</div>
+              <div class="setting-desc">App disguises as battery screen — hides Guardian AI interface</div>
+            </div>
+            <div class="setting-control">
+              <div class="toggle-wrap">
+                <label class="toggle">
+                  <input type="checkbox" onchange="toggleState(this,'on')">
+                  <span class="toggle-slider"></span>
+                </label>
+                <span class="toggle-state">OFF</span>
+              </div>
+            </div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">Share Live GPS with Contacts</div>
+              <div class="setting-desc">Real-time location shared with trusted contacts always</div>
+            </div>
+            <div class="setting-control">
+              <div class="toggle-wrap">
+                <label class="toggle green">
+                  <input type="checkbox" checked onchange="toggleState(this,'on-g')">
+                  <span class="toggle-slider"></span>
+                </label>
+                <span class="toggle-state on-g">ON</span>
+              </div>
+            </div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">GPS Sharing on SOS Only</div>
+              <div class="setting-desc">Share GPS only when SOS is activated (overrides always-on)</div>
+            </div>
+            <div class="setting-control">
+              <div class="toggle-wrap">
+                <label class="toggle">
+                  <input type="checkbox" onchange="toggleState(this,'on')">
+                  <span class="toggle-slider"></span>
+                </label>
+                <span class="toggle-state">OFF</span>
+              </div>
+            </div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">App Lock (Biometric / PIN)</div>
+              <div class="setting-desc">Require authentication to open Guardian AI</div>
+            </div>
+            <div class="setting-control">
+              <div class="toggle-wrap">
+                <label class="toggle green">
+                  <input type="checkbox" checked onchange="toggleState(this,'on-g')">
+                  <span class="toggle-slider"></span>
+                </label>
+                <span class="toggle-state on-g">ON</span>
+              </div>
+            </div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">Incident Data Encryption</div>
+              <div class="setting-desc">Encrypt all stored incident logs with AES-256</div>
+            </div>
+            <div class="setting-control">
+              <div class="toggle-wrap">
+                <label class="toggle green">
+                  <input type="checkbox" checked onchange="toggleState(this,'on-g')">
+                  <span class="toggle-slider"></span>
+                </label>
+                <span class="toggle-state on-g">ON</span>
+              </div>
+            </div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">Anonymous Analytics</div>
+              <div class="setting-desc">Help improve Guardian AI by sharing anonymised usage stats</div>
+            </div>
+            <div class="setting-control">
+              <div class="toggle-wrap">
+                <label class="toggle">
+                  <input type="checkbox" checked onchange="toggleState(this,'on')">
+                  <span class="toggle-slider"></span>
+                </label>
+                <span class="toggle-state on">ON</span>
+              </div>
+            </div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">SOS PIN Code</div>
+              <div class="setting-desc">Required to cancel an active SOS — prevents false cancellation</div>
+            </div>
+            <div class="setting-control">
+              <input class="s-input mono" type="password" value="1234" maxlength="6" style="min-width:120px;letter-spacing:4px" oninput="markDirty()">
+            </div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">Auto-Lock Timeout</div>
+              <div class="setting-desc">Time before app auto-locks when idle</div>
+            </div>
+            <div class="setting-control">
+              <select class="s-select" onchange="markDirty()">
+                <option>1 minute</option>
+                <option selected>5 minutes</option>
+                <option>10 minutes</option>
+                <option>Never</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ AI & DETECTION ══ -->
+      <div id="sec-ai" style="display:none">
+        <div class="panel">
+          <div class="panel-hdr">
+            <div class="panel-title"><span class="dot-blink blue"></span> AI Model Selection</div>
+            <span class="tag blue">AIML DOMAIN</span>
+          </div>
+          <div class="model-grid">
+            <div class="model-card selected" onclick="selectModel(this)">
+              <div class="mc-icon">🌲</div>
+              <div class="mc-name">XGBoost + Random Forest</div>
+              <div class="mc-desc">Ensemble model — best accuracy for threat classification</div>
+              <div class="mc-badge">Primary · 94.2% acc</div>
+            </div>
+            <div class="model-card" onclick="selectModel(this)">
+              <div class="mc-icon">🧠</div>
+              <div class="mc-name">Neural Network (LSTM)</div>
+              <div class="mc-desc">Deep learning — best for time-series motion detection</div>
+              <div class="mc-badge blue">Experimental</div>
+            </div>
+            <div class="model-card" onclick="selectModel(this)">
+              <div class="mc-icon">⚡</div>
+              <div class="mc-name">Lightweight SVM</div>
+              <div class="mc-desc">Optimised for low-power / offline detection</div>
+              <div class="mc-badge warn">Battery Saver</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-hdr">
+            <div class="panel-title"><span class="p-icon">🎯</span> Detection Confidence Thresholds</div>
+            <button class="btn btn-primary" style="font-size:12px;padding:6px 14px" onclick="showToast('Thresholds saved','safe')">Save</button>
+          </div>
+          <div class="conf-row">
+            <div class="conf-name">Face Threat Detection</div>
+            <div class="conf-track">
+              <div class="conf-fill" style="width:75%;background:var(--danger)"></div>
+            </div>
+            <div class="conf-pct" style="color:var(--danger)">75%</div>
+          </div>
+          <div class="conf-row">
+            <div class="conf-name">Gesture Recognition</div>
+            <div class="conf-track">
+              <div class="conf-fill" style="width:80%;background:var(--warn)"></div>
+            </div>
+            <div class="conf-pct" style="color:var(--warn)">80%</div>
+          </div>
+          <div class="conf-row">
+            <div class="conf-name">Voice Keyword Match</div>
+            <div class="conf-track">
+              <div class="conf-fill" style="width:70%;background:var(--blue)"></div>
+            </div>
+            <div class="conf-pct" style="color:var(--blue)">70%</div>
+          </div>
+          <div class="conf-row">
+            <div class="conf-name">Motion Anomaly (Shake)</div>
+            <div class="conf-track">
+              <div class="conf-fill" style="width:85%;background:var(--safe)"></div>
+            </div>
+            <div class="conf-pct" style="color:var(--safe)">85%</div>
+          </div>
+          <div class="conf-row">
+            <div class="conf-name">Route Safety Score Alert</div>
+            <div class="conf-track">
+              <div class="conf-fill" style="width:40%;background:var(--purple)"></div>
+            </div>
+            <div class="conf-pct" style="color:var(--purple)">&lt;40</div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-hdr">
+            <div class="panel-title"><span class="p-icon">📷</span> Camera &amp; Sensor Modules</div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">Face Detection (MediaPipe)</div>
+              <div class="setting-desc">Real-time facial landmark detection via webcam</div>
+            </div>
+            <div class="setting-control">
+              <div class="toggle-wrap">
+                <label class="toggle green">
+                  <input type="checkbox" checked onchange="toggleState(this,'on-g')">
+                  <span class="toggle-slider"></span>
+                </label>
+                <span class="toggle-state on-g">ON</span>
+              </div>
+            </div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">Gesture Recognition (Hands)</div>
+              <div class="setting-desc">Detects distress hand signals — signal for help, fist, wave</div>
+            </div>
+            <div class="setting-control">
+              <div class="toggle-wrap">
+                <label class="toggle green">
+                  <input type="checkbox" checked onchange="toggleState(this,'on-g')">
+                  <span class="toggle-slider"></span>
+                </label>
+                <span class="toggle-state on-g">ON</span>
+              </div>
+            </div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">Voice Keyword Detection</div>
+              <div class="setting-desc">Background microphone listening for distress keywords</div>
+            </div>
+            <div class="setting-control">
+              <div class="toggle-wrap">
+                <label class="toggle green">
+                  <input type="checkbox" checked onchange="toggleState(this,'on-g')">
+                  <span class="toggle-slider"></span>
+                </label>
+                <span class="toggle-state on-g">ON</span>
+              </div>
+            </div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">Accelerometer / Shake Detection</div>
+              <div class="setting-desc">Detects 3× shake pattern to trigger SOS</div>
+            </div>
+            <div class="setting-control">
+              <div class="toggle-wrap">
+                <label class="toggle green">
+                  <input type="checkbox" checked onchange="toggleState(this,'on-g')">
+                  <span class="toggle-slider"></span>
+                </label>
+                <span class="toggle-state on-g">ON</span>
+              </div>
+            </div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">Camera Detection FPS</div>
+              <div class="setting-desc">Higher FPS = better accuracy, higher battery use</div>
+            </div>
+            <div class="setting-control">
+              <div class="range-wrap">
+                <input class="s-range" type="range" min="5" max="30" value="15"
+                  oninput="document.getElementById('fps-val').textContent=this.value+'fps';markDirty()">
+                <span class="range-val" id="fps-val">15fps</span>
+              </div>
+            </div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">SOS Auto-Trigger Delay</div>
+              <div class="setting-desc">Seconds before SOS fires after detection (0 = instant)</div>
+            </div>
+            <div class="setting-control">
+              <div class="range-wrap">
+                <input class="s-range" type="range" min="0" max="30" value="10"
+                  oninput="document.getElementById('sos-delay-val').textContent=this.value+'s';markDirty()">
+                <span class="range-val" id="sos-delay-val">10s</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ VOICE KEYWORDS ══ -->
+      <div id="sec-keywords" style="display:none">
+        <div class="panel">
+          <div class="panel-hdr">
+            <div class="panel-title"><span class="p-icon">🎙</span> Voice Distress Keywords</div>
+            <span class="tag red">LIVE LISTENING</span>
+          </div>
+          <div style="padding:14px 18px 8px;font-size:12px;color:var(--muted)">
+            Guardian AI listens for these keywords in the background and triggers SOS on detection.
+            Add keywords in any language.
+          </div>
+          <div class="keyword-wrap" id="kwWrap">
+            <div class="kw-tag">help <span class="kw-remove" onclick="removeKeyword(this)">×</span></div>
+            <div class="kw-tag">assist <span class="kw-remove" onclick="removeKeyword(this)">×</span></div>
+            <div class="kw-tag">emergency <span class="kw-remove" onclick="removeKeyword(this)">×</span></div>
+            <div class="kw-tag">bachao <span class="kw-remove" onclick="removeKeyword(this)">×</span></div>
+            <div class="kw-tag">police <span class="kw-remove" onclick="removeKeyword(this)">×</span></div>
+            <div class="kw-tag">choro <span class="kw-remove" onclick="removeKeyword(this)">×</span></div>
+            <div class="kw-tag">madad <span class="kw-remove" onclick="removeKeyword(this)">×</span></div>
+            <div class="kw-tag">danger <span class="kw-remove" onclick="removeKeyword(this)">×</span></div>
+          </div>
+          <div class="kw-add-wrap">
+            <input class="kw-add-input" type="text" id="kwInput" placeholder="Add keyword (any language)…"
+              onkeydown="if(event.key==='Enter')addKeyword()">
+            <button class="kw-add-btn" onclick="addKeyword()">+ Add</button>
+          </div>
+          <div class="setting-row" style="border-top:1px solid var(--border)">
+            <div class="setting-info">
+              <div class="setting-label">Sensitivity Level</div>
+              <div class="setting-desc">Higher sensitivity may increase false positives</div>
+            </div>
+            <div class="setting-control">
+              <select class="s-select" onchange="markDirty()">
+                <option>Low</option>
+                <option selected>Medium</option>
+                <option>High</option>
+                <option>Ultra (Experimental)</option>
+              </select>
+            </div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">Multi-language Support</div>
+              <div class="setting-desc">Enable detection for Hindi, Tamil, Bengali keywords</div>
+            </div>
+            <div class="setting-control">
+              <div class="toggle-wrap">
+                <label class="toggle green">
+                  <input type="checkbox" checked onchange="toggleState(this,'on-g')">
+                  <span class="toggle-slider"></span>
+                </label>
+                <span class="toggle-state on-g">ON</span>
+              </div>
+            </div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">Log Voice Events</div>
+              <div class="setting-desc">Save voice trigger timestamps to incident reports</div>
+            </div>
+            <div class="setting-control">
+              <div class="toggle-wrap">
+                <label class="toggle">
+                  <input type="checkbox" checked onchange="toggleState(this,'on')">
+                  <span class="toggle-slider"></span>
+                </label>
+                <span class="toggle-state on">ON</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ SAFETY ZONES ══ -->
+      <div id="sec-zones" style="display:none">
+        <div class="panel">
+          <div class="panel-hdr">
+            <div class="panel-title"><span class="p-icon">🗺</span> Safety Zone Configuration</div>
+            <button class="btn btn-primary" style="font-size:12px;padding:6px 14px" onclick="addZoneRow()">+ Add Zone</button>
+          </div>
+          <table class="zone-table">
+            <thead>
+              <tr>
+                <th>Zone Name</th>
+                <th>Type</th>
+                <th>Safety Score</th>
+                <th>Time Active</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="zoneTableBody">
+              <tr>
+                <td><span class="zone-dot z-safe-dot"></span>Home — Bandra West</td>
+                <td style="color:var(--safe);font-size:12px">Safe Zone</td>
+                <td><span class="zone-score" style="color:var(--safe)">95</span></td>
+                <td style="font-size:12px;color:var(--muted)">Always</td>
+                <td><div class="zone-actions">
+                  <button class="z-btn" onclick="editZone(this)">Edit</button>
+                  <button class="z-btn danger" onclick="deleteZone(this)">Delete</button>
+                </div></td>
+              </tr>
+              <tr>
+                <td><span class="zone-dot z-safe-dot"></span>College Campus</td>
+                <td style="color:var(--safe);font-size:12px">Safe Zone</td>
+                <td><span class="zone-score" style="color:var(--safe)">88</span></td>
+                <td style="font-size:12px;color:var(--muted)">Mon–Sat 7am–8pm</td>
+                <td><div class="zone-actions">
+                  <button class="z-btn" onclick="editZone(this)">Edit</button>
+                  <button class="z-btn danger" onclick="deleteZone(this)">Delete</button>
+                </div></td>
+              </tr>
+              <tr>
+                <td><span class="zone-dot z-warn-dot"></span>Dharavi Corridor</td>
+                <td style="color:var(--warn);font-size:12px">Watch Zone</td>
+                <td><span class="zone-score" style="color:var(--warn)">52</span></td>
+                <td style="font-size:12px;color:var(--muted)">After 9pm</td>
+                <td><div class="zone-actions">
+                  <button class="z-btn" onclick="editZone(this)">Edit</button>
+                  <button class="z-btn danger" onclick="deleteZone(this)">Delete</button>
+                </div></td>
+              </tr>
+              <tr>
+                <td><span class="zone-dot z-danger-dot"></span>Kurla West — Sector 4</td>
+                <td style="color:var(--danger);font-size:12px">Danger Zone</td>
+                <td><span class="zone-score" style="color:var(--danger)">28</span></td>
+                <td style="font-size:12px;color:var(--muted)">Always</td>
+                <td><div class="zone-actions">
+                  <button class="z-btn" onclick="editZone(this)">Edit</button>
+                  <button class="z-btn danger" onclick="deleteZone(this)">Delete</button>
+                </div></td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="add-zone-row">
+            <input class="s-input" type="text" id="newZoneName" placeholder="Zone name or address…" style="flex:1;min-width:0">
+            <select class="s-select" id="newZoneType" style="min-width:130px">
+              <option value="safe">Safe Zone</option>
+              <option value="watch">Watch Zone</option>
+              <option value="danger">Danger Zone</option>
+            </select>
+            <button class="btn btn-safe" onclick="addZoneFromInput()">Add</button>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-hdr">
+            <div class="panel-title"><span class="p-icon">⚙️</span> Zone Alert Behaviour</div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">Auto-alert on Danger Zone Entry</div>
+              <div class="setting-desc">Immediately notify contacts when you enter a danger zone</div>
+            </div>
+            <div class="setting-control">
+              <div class="toggle-wrap">
+                <label class="toggle red">
+                  <input type="checkbox" checked onchange="toggleState(this,'on-r')">
+                  <span class="toggle-slider"></span>
+                </label>
+                <span class="toggle-state on-r">ON</span>
+              </div>
+            </div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">Geofence Radius</div>
+              <div class="setting-desc">Distance buffer around zone boundaries</div>
+            </div>
+            <div class="setting-control">
+              <div class="range-wrap">
+                <input class="s-range" type="range" min="50" max="500" step="50" value="150"
+                  oninput="document.getElementById('gf-val').textContent=this.value+'m';markDirty()">
+                <span class="range-val" id="gf-val">150m</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ APPEARANCE ══ -->
+      <div id="sec-appearance" style="display:none">
+        <div class="panel">
+          <div class="panel-hdr">
+            <div class="panel-title"><span class="p-icon">🎨</span> Display &amp; Appearance</div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">Theme</div>
+              <div class="setting-desc">Visual theme for the Guardian AI interface</div>
+            </div>
+            <div class="setting-control">
+              <select class="s-select" onchange="markDirty()">
+                <option selected>Dark (Tactical)</option>
+                <option>Dark (Midnight Blue)</option>
+                <option>Dark (Emerald)</option>
+                <option>Light (Beta)</option>
+              </select>
+            </div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">Accent Color</div>
+              <div class="setting-desc">Primary highlight color for alerts and UI elements</div>
+            </div>
+            <div class="setting-control" style="display:flex;gap:8px">
+              <div onclick="setAccent(this,'#ff2d6b')" style="width:28px;height:28px;border-radius:50%;background:#ff2d6b;cursor:pointer;border:2px solid #ff2d6b;box-shadow:0 0 8px rgba(255,45,107,0.5)"></div>
+              <div onclick="setAccent(this,'#1a8cff')" style="width:28px;height:28px;border-radius:50%;background:#1a8cff;cursor:pointer;border:2px solid transparent"></div>
+              <div onclick="setAccent(this,'#00e5a0')" style="width:28px;height:28px;border-radius:50%;background:#00e5a0;cursor:pointer;border:2px solid transparent"></div>
+              <div onclick="setAccent(this,'#a855f7')" style="width:28px;height:28px;border-radius:50%;background:#a855f7;cursor:pointer;border:2px solid transparent"></div>
+              <div onclick="setAccent(this,'#ff6b35')" style="width:28px;height:28px;border-radius:50%;background:#ff6b35;cursor:pointer;border:2px solid transparent"></div>
+            </div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">Scanline Effect</div>
+              <div class="setting-desc">Retro CRT scanline overlay on the interface</div>
+            </div>
+            <div class="setting-control">
+              <div class="toggle-wrap">
+                <label class="toggle">
+                  <input type="checkbox" checked onchange="toggleState(this,'on')">
+                  <span class="toggle-slider"></span>
+                </label>
+                <span class="toggle-state on">ON</span>
+              </div>
+            </div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">Grid Background</div>
+              <div class="setting-desc">Tactical grid overlay on the background</div>
+            </div>
+            <div class="setting-control">
+              <div class="toggle-wrap">
+                <label class="toggle">
+                  <input type="checkbox" checked onchange="toggleState(this,'on')">
+                  <span class="toggle-slider"></span>
+                </label>
+                <span class="toggle-state on">ON</span>
+              </div>
+            </div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">Animations &amp; Transitions</div>
+              <div class="setting-desc">Disable for reduced motion / accessibility</div>
+            </div>
+            <div class="setting-control">
+              <div class="toggle-wrap">
+                <label class="toggle green">
+                  <input type="checkbox" checked onchange="toggleState(this,'on-g')">
+                  <span class="toggle-slider"></span>
+                </label>
+                <span class="toggle-state on-g">ON</span>
+              </div>
+            </div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">Compact Mode</div>
+              <div class="setting-desc">Reduce card padding for more content density</div>
+            </div>
+            <div class="setting-control">
+              <div class="toggle-wrap">
+                <label class="toggle">
+                  <input type="checkbox" onchange="toggleState(this,'on')">
+                  <span class="toggle-slider"></span>
+                </label>
+                <span class="toggle-state">OFF</span>
+              </div>
+            </div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">Language</div>
+              <div class="setting-desc">Interface display language</div>
+            </div>
+            <div class="setting-control">
+              <select class="s-select" onchange="markDirty()">
+                <option selected>English</option>
+                <option>हिंदी (Hindi)</option>
+                <option>मराठी (Marathi)</option>
+                <option>বাংলা (Bengali)</option>
+                <option>தமிழ் (Tamil)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ SYSTEM STATUS ══ -->
+      <div id="sec-system" style="display:none">
+        <div class="panel">
+          <div class="panel-hdr">
+            <div class="panel-title"><span class="dot-blink green"></span> System Status</div>
+            <span class="tag green">ALL SYSTEMS GO</span>
+          </div>
+          <div class="sys-status-grid">
+            <div class="ss-item">
+              <div class="ss-label">AI Engine</div>
+              <div class="ss-val ok">Online ✓</div>
+            </div>
+            <div class="ss-item">
+              <div class="ss-label">GPS Module</div>
+              <div class="ss-val ok">Locked ✓</div>
+            </div>
+            <div class="ss-item">
+              <div class="ss-label">Microphone</div>
+              <div class="ss-val ok">Active ✓</div>
+            </div>
+            <div class="ss-item">
+              <div class="ss-label">Camera</div>
+              <div class="ss-val warn">Standby</div>
+            </div>
+            <div class="ss-item">
+              <div class="ss-label">XGBoost Model</div>
+              <div class="ss-val ok">Loaded ✓</div>
+            </div>
+            <div class="ss-item">
+              <div class="ss-label">Random Forest</div>
+              <div class="ss-val ok">Loaded ✓</div>
+            </div>
+            <div class="ss-item">
+              <div class="ss-label">MediaPipe</div>
+              <div class="ss-val ok">Ready ✓</div>
+            </div>
+            <div class="ss-item">
+              <div class="ss-label">Network</div>
+              <div class="ss-val ok">Connected</div>
+            </div>
+            <div class="ss-item">
+              <div class="ss-label">Version</div>
+              <div class="ss-val blue">v2.0.1</div>
+            </div>
+            <div class="ss-item">
+              <div class="ss-label">Build</div>
+              <div class="ss-val blue">AIML-2025</div>
+            </div>
+            <div class="ss-item">
+              <div class="ss-label">Uptime</div>
+              <div class="ss-val blue" id="uptimeVal">--:--:--</div>
+            </div>
+            <div class="ss-item">
+              <div class="ss-label">Memory</div>
+              <div class="ss-val ok">124 MB</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-hdr">
+            <div class="panel-title"><span class="p-icon">💾</span> Data Management</div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">Export All Data</div>
+              <div class="setting-desc">Download all contacts, zones, incidents and settings as JSON</div>
+            </div>
+            <div class="setting-control">
+              <button class="btn btn-primary" onclick="exportData()">⬇ Export</button>
+            </div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">Import Settings</div>
+              <div class="setting-desc">Restore settings from a previous Guardian AI export</div>
+            </div>
+            <div class="setting-control">
+              <button class="btn" onclick="showToast('📂 Import — connect to backend','info')">📂 Import</button>
+            </div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">Auto-Backup to Cloud</div>
+              <div class="setting-desc">Sync settings and contacts to secure cloud storage</div>
+            </div>
+            <div class="setting-control">
+              <div class="toggle-wrap">
+                <label class="toggle">
+                  <input type="checkbox" onchange="toggleState(this,'on')">
+                  <span class="toggle-slider"></span>
+                </label>
+                <span class="toggle-state">OFF</span>
+              </div>
+            </div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">Incident Log Retention</div>
+              <div class="setting-desc">Auto-delete old incident logs after this period</div>
+            </div>
+            <div class="setting-control">
+              <select class="s-select" onchange="markDirty()">
+                <option>30 days</option>
+                <option selected>90 days</option>
+                <option>180 days</option>
+                <option>1 year</option>
+                <option>Never</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ DANGER ZONE ══ -->
+      <div id="sec-danger" style="display:none">
+        <div class="panel">
+          <div class="panel-hdr">
+            <div class="panel-title" style="color:var(--danger)">⚠ Danger Zone</div>
+            <span class="tag red">IRREVERSIBLE</span>
+          </div>
+          <div class="danger-zone-card">
+            <div class="dz-icon">🗑</div>
+            <div>
+              <div class="dz-label">Clear All Incident Reports</div>
+              <div class="dz-desc">Permanently deletes all stored incident logs. This action cannot be undone.</div>
+              <button class="btn btn-danger" onclick="confirmDangerAction('clearReports')">Clear All Reports</button>
+            </div>
+          </div>
+          <div class="danger-zone-card">
+            <div class="dz-icon">👤</div>
+            <div>
+              <div class="dz-label">Delete All Contacts</div>
+              <div class="dz-desc">Remove all emergency contacts. SOS alerts will have no recipients until new contacts are added.</div>
+              <button class="btn btn-danger" onclick="confirmDangerAction('clearContacts')">Delete All Contacts</button>
+            </div>
+          </div>
+          <div class="danger-zone-card">
+            <div class="dz-icon">🔄</div>
+            <div>
+              <div class="dz-label">Factory Reset Guardian AI</div>
+              <div class="dz-desc">Resets all settings, contacts, zones and models to factory defaults. You will need to reconfigure the app from scratch.</div>
+              <button class="btn btn-danger" onclick="confirmDangerAction('factoryReset')">Factory Reset</button>
+            </div>
+          </div>
+          <div class="danger-zone-card">
+            <div class="dz-icon">🚫</div>
+            <div>
+              <div class="dz-label">Deactivate Guardian AI</div>
+              <div class="dz-desc">Disables all background monitoring — GPS, microphone, camera and AI detection will be fully stopped.</div>
+              <button class="btn btn-danger" onclick="confirmDangerAction('deactivate')">Deactivate System</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /settings-content -->
+  </div><!-- /settings-grid -->
+</div><!-- /wrap -->
+
+<!-- SAVE BAR -->
+<div class="save-bar" id="saveBar">
+  <div class="save-bar-msg">You have <span>unsaved changes</span> — save before leaving this page</div>
+  <div class="save-actions">
+    <button class="btn" onclick="discardChanges()">Discard</button>
+    <button class="btn btn-primary" onclick="saveAllSettings()">💾 Save Changes</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── CLOCK ─────────────────────────────────────────────────
+function updateClock(){
+  document.getElementById('navClock').textContent =
+    new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ── UPTIME ────────────────────────────────────────────────
+const startTime = Date.now();
+function updateUptime(){
+  const s = Math.floor((Date.now() - startTime) / 1000);
+  const h = String(Math.floor(s/3600)).padStart(2,'0');
+  const m = String(Math.floor((s%3600)/60)).padStart(2,'0');
+  const sc = String(s%60).padStart(2,'0');
+  const el = document.getElementById('uptimeVal');
+  if(el) el.textContent = `${h}:${m}:${sc}`;
+}
+setInterval(updateUptime, 1000);
+
+// ── SECTION NAV ───────────────────────────────────────────
+const sections = ['profile','notifications','privacy','ai','keywords','zones','appearance','system','danger'];
+function showSection(name, el){
+  sections.forEach(s => {
+    const sec = document.getElementById('sec-'+s);
+    if(sec) sec.style.display = s === name ? '' : 'none';
+  });
+  document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+  if(el) el.classList.add('active');
+}
+
+// ── TOGGLE ────────────────────────────────────────────────
+function toggleState(checkbox, onClass){
+  const stateEl = checkbox.closest('.toggle-wrap').querySelector('.toggle-state');
+  if(checkbox.checked){
+    stateEl.textContent = 'ON';
+    stateEl.className = 'toggle-state ' + onClass;
+  } else {
+    stateEl.textContent = 'OFF';
+    stateEl.className = 'toggle-state';
+  }
+  markDirty();
+}
+
+// ── DIRTY STATE ───────────────────────────────────────────
+let isDirty = false;
+function markDirty(){
+  isDirty = true;
+  document.getElementById('saveBar').classList.add('visible');
+}
+function discardChanges(){
+  isDirty = false;
+  document.getElementById('saveBar').classList.remove('visible');
+  showToast('Changes discarded','info');
+}
+
+// ── SAVE ──────────────────────────────────────────────────
+function saveAllSettings(){
+  const name = document.getElementById('inputName');
+  if(name) document.getElementById('displayName').textContent = name.value;
+  isDirty = false;
+  document.getElementById('saveBar').classList.remove('visible');
+  showToast('✅ All settings saved successfully','safe');
+}
+
+// ── PROFILE ───────────────────────────────────────────────
+function changeAvatar(){
+  showToast('📷 Avatar upload — connect to backend to enable','info');
+}
+
+// ── KEYWORDS ──────────────────────────────────────────────
+function addKeyword(){
+  const input = document.getElementById('kwInput');
+  const val = input.value.trim();
+  if(!val) return;
+  const wrap = document.getElementById('kwWrap');
+  const tag = document.createElement('div');
+  tag.className = 'kw-tag';
+  tag.innerHTML = `${val} <span class="kw-remove" onclick="removeKeyword(this)">×</span>`;
+  wrap.appendChild(tag);
+  input.value = '';
+  markDirty();
+  showToast(`🎙 Keyword "${val}" added`,'safe');
+}
+function removeKeyword(el){
+  el.closest('.kw-tag').remove();
+  markDirty();
+}
+
+// ── ZONES ─────────────────────────────────────────────────
+function addZoneFromInput(){
+  const name = document.getElementById('newZoneName').value.trim();
+  const type = document.getElementById('newZoneType').value;
+  if(!name){ showToast('⚠ Enter a zone name','warn'); return; }
+  const tbody = document.getElementById('zoneTableBody');
+  const colors = {safe:'var(--safe)',watch:'var(--warn)',danger:'var(--danger)'};
+  const scores = {safe:Math.floor(Math.random()*20)+75, watch:Math.floor(Math.random()*20)+40, danger:Math.floor(Math.random()*25)+15};
+  const dotClass = {safe:'z-safe-dot',watch:'z-warn-dot',danger:'z-danger-dot'};
+  const labels = {safe:'Safe Zone',watch:'Watch Zone',danger:'Danger Zone'};
+  const row = document.createElement('tr');
+  row.innerHTML = `
+    <td><span class="zone-dot ${dotClass[type]}"></span>${name}</td>
+    <td style="color:${colors[type]};font-size:12px">${labels[type]}</td>
+    <td><span class="zone-score" style="color:${colors[type]}">${scores[type]}</span></td>
+    <td style="font-size:12px;color:var(--muted)">Always</td>
+    <td><div class="zone-actions">
+      <button class="z-btn" onclick="editZone(this)">Edit</button>
+      <button class="z-btn danger" onclick="deleteZone(this)">Delete</button>
+    </div></td>`;
+  tbody.appendChild(row);
+  document.getElementById('newZoneName').value = '';
+  markDirty();
+  showToast(`🗺 Zone "${name}" added`,'safe');
+}
+function addZoneRow(){ document.getElementById('newZoneName').focus(); }
+function editZone(btn){ showToast('✏️ Zone editor — connect to map module','info'); }
+function deleteZone(btn){
+  btn.closest('tr').remove();
+  markDirty();
+  showToast('🗑 Zone removed','info');
+}
+
+// ── AI MODELS ─────────────────────────────────────────────
+function selectModel(card){
+  document.querySelectorAll('.model-card').forEach(c => c.classList.remove('selected'));
+  card.classList.add('selected');
+  markDirty();
+  showToast('🤖 AI model selected — will apply on next restart','info');
+}
+
+// ── ACCENT COLOR ──────────────────────────────────────────
+function setAccent(el, color){
+  document.querySelectorAll('[onclick^="setAccent"]').forEach(d => {
+    d.style.border = '2px solid transparent';
+    d.style.boxShadow = 'none';
+  });
+  el.style.border = `2px solid ${color}`;
+  el.style.boxShadow = `0 0 8px ${color}66`;
+  showToast('🎨 Accent color updated','safe');
+  markDirty();
+}
+
+// ── SCHEDULE DAYS ─────────────────────────────────────────
+function toggleDay(el){
+  el.classList.toggle('active');
+  markDirty();
+}
+
+// ── DANGER ZONE ACTIONS ───────────────────────────────────
+function confirmDangerAction(action){
+  const msgs = {
+    clearReports:'⚠ Clear ALL incident reports? This cannot be undone.',
+    clearContacts:'⚠ Delete ALL contacts? SOS will have no recipients.',
+    factoryReset:'⚠ FACTORY RESET? All data will be erased.',
+    deactivate:'⚠ Deactivate Guardian AI? All monitoring will stop.'
+  };
+  if(!confirm(msgs[action] || 'Are you sure?')) return;
+  showToast('⚠ Action completed — system updated','warn');
+}
+
+// ── EXPORT ────────────────────────────────────────────────
+function exportData(){
+  const data = {
+    version:'2.0.1',exported:new Date().toISOString(),
+    profile:{name:'Priya Sharma',phone:'+91 98765 43210',address:'Bandra West, Mumbai'},
+    keywords:['help','assist','emergency','bachao','police','choro','madad','danger'],
+    zones:[
+      {name:'Home — Bandra West',type:'safe',score:95},
+      {name:'College Campus',type:'safe',score:88},
+      {name:'Dharavi Corridor',type:'watch',score:52},
+      {name:'Kurla West — Sector 4',type:'danger',score:28},
+    ]
+  };
+  const a = document.createElement('a');
+  a.href = 'data:application/json;charset=utf-8,'+encodeURIComponent(JSON.stringify(data,null,2));
+  a.download = `guardian_ai_settings_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  showToast('⬇ Settings exported as JSON','safe');
+}
+
+// ── RESET ─────────────────────────────────────────────────
+function resetDefaults(){
+  if(!confirm('Reset all settings to default values?')) return;
+  showToast('↺ Settings reset to defaults','info');
+  isDirty = false;
+  document.getElementById('saveBar').classList.remove('visible');
+}
+
+// ── SOS ───────────────────────────────────────────────────
+function triggerSOS(){ showToast('🆘 SOS triggered! Alerting contacts…','danger'); }
+
+// ── TOAST ─────────────────────────────────────────────────
+function showToast(msg, type='info'){
+  const t = document.getElementById('toast');
+  t.className = `toast ${type} show`;
+  t.textContent = msg;
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+</script>
+</body>
+</html>
